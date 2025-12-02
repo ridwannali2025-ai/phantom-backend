@@ -17,3 +17,4 @@ protocol WorkoutService {
     func fetchRecentSessions(for userId: String) async throws -> [WorkoutSession]
 }
 
+

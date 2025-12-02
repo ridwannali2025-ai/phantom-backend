@@ -10,8 +10,17 @@ import SwiftUI
 @main
 struct PhantomAIApp: App {
     /// Dependency injection container
-    /// In production, this would be initialized with real services
+    /// Currently using preview (mock services) for development
+    /// Uncomment the live container below when ready to use production services
     let container = AppContainer.preview
+    
+    // Uncomment when ready to use production services:
+    // let container = AppContainer.live(config: .init(
+    //     supabaseUrl: URL(string: "https://YOUR_PROJECT.supabase.co")!,
+    //     supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
+    //     apiBaseURL: URL(string: "https://your-vercel-backend.vercel.app")!,
+    //     mixpanelApiKey: nil // Optional: Add your Mixpanel API key here
+    // ))
     
     var body: some Scene {
         WindowGroup {
@@ -20,4 +29,5 @@ struct PhantomAIApp: App {
         }
     }
 }
+
 

@@ -70,3 +70,4 @@ struct MealsView: View {
         .environment(\.container, AppContainer.preview)
 }
 
+

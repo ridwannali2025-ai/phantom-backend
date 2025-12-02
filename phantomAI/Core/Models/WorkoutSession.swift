@@ -20,3 +20,4 @@ struct WorkoutSession: Codable, Identifiable {
     let notes: String?
 }
 
+

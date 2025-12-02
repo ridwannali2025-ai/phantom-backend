@@ -16,6 +16,7 @@ struct AppContainer {
     let aiService: AIService
     let paymentsService: PaymentsService
     let analyticsService: AnalyticsService
+    let localStorageService: LocalStorageService
     
     /// Preview container with mock services for SwiftUI previews
     static var preview: AppContainer {
@@ -25,7 +26,22 @@ struct AppContainer {
             workoutService: MockWorkoutService(),
             aiService: MockAIService(),
             paymentsService: MockPaymentsService(),
-            analyticsService: MockAnalyticsService()
+            analyticsService: MockAnalyticsService(),
+            localStorageService: UserDefaultsLocalStorageService()
+        )
+    }
+    
+    /// Live container with production services
+    /// Initialize with real API keys and URLs for production use
+    static func live(config: AppConfig) -> AppContainer {
+        AppContainer(
+            authService: SupabaseAuthService(config: config),
+            programService: SupabaseProgramService(config: config),
+            workoutService: SupabaseWorkoutService(config: config),
+            aiService: VercelAIService(baseURL: config.apiBaseURL),
+            paymentsService: StoreKitPaymentsService(),
+            analyticsService: MixpanelAnalyticsService(apiKey: config.mixpanelApiKey),
+            localStorageService: UserDefaultsLocalStorageService()
         )
     }
 }
