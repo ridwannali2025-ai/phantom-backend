@@ -1,0 +1,54 @@
+//
+//  OnboardingViewModel.swift
+//  phantomAI
+//
+//  Created by Ridwan Ali on 12/1/25.
+//
+
+import Foundation
+import Combine
+
+/// View model for onboarding flow
+/// Manages onboarding state and completion
+@MainActor
+final class OnboardingViewModel: ObservableObject {
+    let container: AppContainer
+    
+    @Published var currentStep: Int = 0
+    @Published var answers = OnboardingAnswers()
+    
+    let stepsCount = 4
+    
+    init(container: AppContainer) {
+        self.container = container
+    }
+    
+    /// Move to the next step
+    func nextStep() {
+        guard currentStep < stepsCount - 1 else { return }
+        currentStep += 1
+    }
+    
+    /// Move to the previous step
+    func previousStep() {
+        guard currentStep > 0 else { return }
+        currentStep -= 1
+    }
+    
+    /// Complete onboarding and mark as completed
+    /// - Parameter onFinished: Callback to execute when onboarding is complete
+    func completeOnboarding(onFinished: @escaping () -> Void) {
+        // Mark onboarding as completed
+        container.localStorageService.setOnboardingCompleted(true)
+        
+        // Track analytics event
+        container.analyticsService.track(event: AnalyticsEvent(
+            name: "onboarding_completed",
+            parameters: [:]
+        ))
+        
+        // Execute completion callback
+        onFinished()
+    }
+}
+

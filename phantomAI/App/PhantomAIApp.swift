@@ -24,7 +24,7 @@ struct PhantomAIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootTabView()
+            AppRootView()
                 .environment(\.container, container)
         }
     }

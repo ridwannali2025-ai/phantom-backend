@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// View model for Meals view
 /// Manages state and business logic for meal plans

@@ -26,11 +26,7 @@ final class MixpanelAnalyticsService: AnalyticsService {
         // 3. Handle nil apiKey case (no-op or use alternative analytics)
         
         // Stub implementation - print for now
-        if let apiKey = apiKey {
-            print("📊 [Mixpanel] Event: \(event.name) with params: \(event.parameters)")
-        } else {
-            print("📊 [Analytics] Event: \(event.name) with params: \(event.parameters) (no API key)")
-        }
+        print("📊 [Analytics] Tracking event \(event.name) with params: \(event.parameters), apiKey: \(apiKey ?? "none")")
     }
     
     func trackScreen(_ name: String) {
@@ -40,11 +36,7 @@ final class MixpanelAnalyticsService: AnalyticsService {
         // 3. Handle nil apiKey case
         
         // Stub implementation - print for now
-        if let apiKey = apiKey {
-            print("📱 [Mixpanel] Screen: \(name)")
-        } else {
-            print("📱 [Analytics] Screen: \(name) (no API key)")
-        }
+        print("📱 [Analytics] Tracking screen \(name) with apiKey: \(apiKey ?? "none")")
     }
 }
 

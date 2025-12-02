@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// View model for Workouts view
 /// Manages state and business logic for workout sessions

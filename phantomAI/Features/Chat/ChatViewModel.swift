@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// View model for Chat view
 /// Manages state and business logic for AI chat
@@ -25,14 +26,10 @@ final class ChatViewModel: ObservableObject {
     func load(container: AppContainer) async {
         state = .loading
         
-        do {
-            // Track screen view
-            container.analyticsService.trackScreen("Chat")
-            
-            state = .loaded
-        } catch {
-            state = .error(error.localizedDescription)
-        }
+        // Track screen view
+        container.analyticsService.trackScreen("Chat")
+        
+        state = .loaded
     }
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// View model for Profile view
 /// Manages state and business logic for user profile
@@ -25,14 +26,10 @@ final class ProfileViewModel: ObservableObject {
     func load(container: AppContainer) async {
         state = .loading
         
-        do {
-            // Track screen view
-            container.analyticsService.trackScreen("Profile")
-            
-            state = .loaded
-        } catch {
-            state = .error(error.localizedDescription)
-        }
+        // Track screen view
+        container.analyticsService.trackScreen("Profile")
+        
+        state = .loaded
     }
 }
 

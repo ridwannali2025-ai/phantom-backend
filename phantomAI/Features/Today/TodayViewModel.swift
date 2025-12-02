@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// View model for Today view
 /// Manages state and business logic for today's plan
