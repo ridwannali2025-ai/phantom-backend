@@ -18,8 +18,8 @@ struct OnboardingExperienceView: View {
         VStack(spacing: 0) {
             // Header
             OnboardingHeaderView(
-                currentStep: 2,
-                totalSteps: 4,
+                currentStep: OnboardingStep.trainingExperience.stepIndex,
+                totalSteps: OnboardingStep.totalSteps,
                 onBack: onBack
             )
             .padding(.top, 8)

@@ -18,8 +18,8 @@ struct OnboardingScheduleView: View {
         VStack(spacing: 0) {
             // Header
             OnboardingHeaderView(
-                currentStep: 1,
-                totalSteps: 4,
+                currentStep: OnboardingStep.trainingDaysPerWeek.stepIndex,
+                totalSteps: OnboardingStep.totalSteps,
                 onBack: onBack
             )
             .padding(.top, 8)

@@ -14,18 +14,20 @@ import Combine
 final class OnboardingViewModel: ObservableObject {
     let container: AppContainer
     
-    @Published var currentStep: Int = 0
+    @Published var currentStep: OnboardingStep = .primaryGoal
     @Published var answers = OnboardingAnswers()
-    
-    let stepsCount = 4
     
     init(container: AppContainer) {
         self.container = container
     }
     
-    /// Select a fitness goal
+    /// Select a fitness goal (legacy method - maps to primaryGoal)
     func selectGoal(_ goal: FitnessGoal) {
-        answers.goal = goal
+        // Map legacy FitnessGoal to PrimaryGoal
+        if let primaryGoal = PrimaryGoal(rawValue: goal.rawValue) {
+            answers.primaryGoal = primaryGoal
+        }
+        answers.goal = goal // Keep for backward compatibility
     }
     
     /// Select training days per week
@@ -38,30 +40,28 @@ final class OnboardingViewModel: ObservableObject {
         answers.trainingExperience = level
     }
     
-    /// Move to the previous step
-    func goToPreviousStep() {
-        previousStep()
-    }
-    
     /// Move to the next step
     func goToNextStep() {
-        // Advance through: goal (0) -> schedule (1) -> experience (2) -> processing (3)
-        // Do NOT advance beyond processing (step 3)
-        if currentStep < stepsCount - 1 {
-            currentStep += 1
+        if let next = currentStep.next() {
+            currentStep = next
+        }
+    }
+    
+    /// Move to the previous step
+    func goToPreviousStep() {
+        if let previous = currentStep.previous() {
+            currentStep = previous
         }
     }
     
     /// Move to the next step (legacy method for compatibility)
     func nextStep() {
-        guard currentStep < stepsCount - 1 else { return }
-        currentStep += 1
+        goToNextStep()
     }
     
-    /// Move to the previous step
+    /// Move to the previous step (legacy method for compatibility)
     func previousStep() {
-        guard currentStep > 0 else { return }
-        currentStep -= 1
+        goToPreviousStep()
     }
     
     /// Complete onboarding and mark as completed

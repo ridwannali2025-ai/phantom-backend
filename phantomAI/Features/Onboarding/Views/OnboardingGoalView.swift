@@ -30,8 +30,8 @@ struct OnboardingGoalView: View {
         VStack(spacing: 0) {
             // Header
             OnboardingHeaderView(
-                currentStep: 0,
-                totalSteps: 4,
+                currentStep: OnboardingStep.primaryGoal.stepIndex,
+                totalSteps: OnboardingStep.totalSteps,
                 onBack: onBack
             )
             .padding(.top, 8)

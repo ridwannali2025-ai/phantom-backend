@@ -21,7 +21,8 @@ struct OnboardingView: View {
     var body: some View {
         Group {
             switch viewModel.currentStep {
-            case 0:
+            case .primaryGoal:
+                // Map to legacy goal view for now
                 OnboardingGoalView(
                     selectedGoal: viewModel.answers.goal,
                     onSelectGoal: { viewModel.selectGoal($0) },
@@ -29,7 +30,7 @@ struct OnboardingView: View {
                     onBack: nil
                 )
                 
-            case 1:
+            case .trainingDaysPerWeek:
                 OnboardingScheduleView(
                     selectedDays: viewModel.answers.trainingDaysPerWeek,
                     onSelectDays: { viewModel.selectTrainingDays($0) },
@@ -37,7 +38,7 @@ struct OnboardingView: View {
                     onBack: { viewModel.goToPreviousStep() }
                 )
                 
-            case 2:
+            case .trainingExperience:
                 OnboardingExperienceView(
                     selectedExperience: viewModel.answers.trainingExperience,
                     onSelectExperience: { viewModel.selectExperience($0) },
@@ -45,20 +46,27 @@ struct OnboardingView: View {
                     onBack: { viewModel.goToPreviousStep() }
                 )
                 
-            case 3:
+            case .processing:
                 ProgramBuildingView(onFinished: {
                     // Mark onboarding as completed and finish
                     viewModel.completeOnboarding(onFinished: onFinished)
                 })
                 
             default:
-                // Fallback placeholder
-                VStack {
-                    Spacer()
-                    Text("Next onboarding step")
-                        .font(.title2)
-                    Spacer()
+                // Placeholder for unimplemented steps
+                VStack(spacing: 24) {
+                    Text("Onboarding step: \(viewModel.currentStep.rawValue)")
+                        .font(.title3)
+                    
+                    PrimaryContinueButton(
+                        title: "Continue",
+                        isEnabled: true,
+                        action: { viewModel.goToNextStep() }
+                    )
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
                 .background(Color(.systemBackground))
             }
         }
