@@ -7,14 +7,31 @@
 
 import SwiftUI
 
-/// Root view that determines initial app destination based on onboarding status
+/// Root view that determines initial app destination based on authentication and onboarding status
 struct AppRootView: View {
     @Environment(\.container) private var container
-    @State private var startDestination: AppStartDestination = .onboarding
+    @State private var startDestination: AppStartDestination = .welcome
+    @State private var showingAuth = false
     
     var body: some View {
         Group {
             switch startDestination {
+            case .welcome:
+                WelcomeView(
+                    onGetStarted: {
+                        showingAuth = true
+                    },
+                    onAlreadyHaveAccount: {
+                        showingAuth = true
+                    }
+                )
+                .fullScreenCover(isPresented: $showingAuth) {
+                    AuthView(container: container) {
+                        // User signed in - determine next step
+                        handleSignedIn()
+                    }
+                }
+                
             case .onboarding:
                 OnboardingView(container: container) {
                     // Onboarding completed - switch to main app
@@ -28,15 +45,37 @@ struct AppRootView: View {
             }
         }
         .onAppear {
-            // Determine initial destination based on onboarding status
+            // Determine initial destination based on auth and onboarding status
             determineStartDestination()
         }
     }
     
     /// Determine the initial destination when the app launches
     private func determineStartDestination() {
+        let hasUserId = container.authService.currentUserId != nil
         let isOnboardingCompleted = container.localStorageService.isOnboardingCompleted()
-        startDestination = isOnboardingCompleted ? .main : .onboarding
+        
+        if !hasUserId {
+            startDestination = .welcome
+        } else if !isOnboardingCompleted {
+            startDestination = .onboarding
+        } else {
+            startDestination = .main
+        }
+    }
+    
+    /// Handle successful authentication
+    private func handleSignedIn() {
+        showingAuth = false
+        let isOnboardingCompleted = container.localStorageService.isOnboardingCompleted()
+        
+        withAnimation {
+            if isOnboardingCompleted {
+                startDestination = .main
+            } else {
+                startDestination = .onboarding
+            }
+        }
     }
 }
 
