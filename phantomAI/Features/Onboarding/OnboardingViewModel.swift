@@ -33,6 +33,11 @@ final class OnboardingViewModel: ObservableObject {
         answers.trainingDaysPerWeek = days
     }
     
+    /// Select training experience level
+    func selectExperience(_ level: TrainingExperience) {
+        answers.trainingExperience = level
+    }
+    
     /// Move to the previous step
     func goToPreviousStep() {
         previousStep()

@@ -11,8 +11,18 @@ import Foundation
 struct OnboardingAnswers: Codable {
     var goal: FitnessGoal?
     var trainingDaysPerWeek: Int?
+    var trainingExperience: TrainingExperience?
     
-    // TODO: add experience, equipment, etc. later
+    // TODO: add equipment, etc. later
+}
+
+/// Training experience levels
+enum TrainingExperience: String, CaseIterable, Identifiable, Codable {
+    case beginner = "Beginner"
+    case intermediate = "Intermediate"
+    case advanced = "Advanced"
+    
+    var id: String { rawValue }
 }
 
 /// Fitness goal options for onboarding

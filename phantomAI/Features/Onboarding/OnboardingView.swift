@@ -37,6 +37,14 @@ struct OnboardingView: View {
                     onBack: { viewModel.goToPreviousStep() }
                 )
                 
+            case 2:
+                OnboardingExperienceView(
+                    selectedExperience: viewModel.answers.trainingExperience,
+                    onSelectExperience: { viewModel.selectExperience($0) },
+                    onContinue: { viewModel.goToNextStep() },
+                    onBack: { viewModel.goToPreviousStep() }
+                )
+                
             default:
                 // For now, show a simple placeholder Text("Next screen coming soon")
                 VStack {
