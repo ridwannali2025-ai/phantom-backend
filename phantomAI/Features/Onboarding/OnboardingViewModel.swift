@@ -45,7 +45,8 @@ final class OnboardingViewModel: ObservableObject {
     
     /// Move to the next step
     func goToNextStep() {
-        // For now, just increment currentStep by 1 with bounds checking
+        // Advance through: goal (0) -> schedule (1) -> experience (2) -> processing (3)
+        // Do NOT advance beyond processing (step 3)
         if currentStep < stepsCount - 1 {
             currentStep += 1
         }

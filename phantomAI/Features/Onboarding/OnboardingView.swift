@@ -45,8 +45,14 @@ struct OnboardingView: View {
                     onBack: { viewModel.goToPreviousStep() }
                 )
                 
+            case 3:
+                ProgramBuildingView(onFinished: {
+                    // Mark onboarding as completed and finish
+                    viewModel.completeOnboarding(onFinished: onFinished)
+                })
+                
             default:
-                // For now, show a simple placeholder Text("Next screen coming soon")
+                // Fallback placeholder
                 VStack {
                     Spacer()
                     Text("Next onboarding step")
