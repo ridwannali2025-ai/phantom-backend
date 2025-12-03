@@ -23,7 +23,20 @@ final class OnboardingViewModel: ObservableObject {
         self.container = container
     }
     
+    /// Select a fitness goal
+    func selectGoal(_ goal: FitnessGoal) {
+        answers.goal = goal
+    }
+    
     /// Move to the next step
+    func goToNextStep() {
+        // For now, just increment currentStep by 1 with bounds checking
+        if currentStep < stepsCount - 1 {
+            currentStep += 1
+        }
+    }
+    
+    /// Move to the next step (legacy method for compatibility)
     func nextStep() {
         guard currentStep < stepsCount - 1 else { return }
         currentStep += 1

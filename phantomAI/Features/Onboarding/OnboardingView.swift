@@ -19,90 +19,26 @@ struct OnboardingView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Content area
-            TabView(selection: $viewModel.currentStep) {
-                // Step 0: Welcome
-                OnboardingStepView(
-                    title: "Welcome to PhantomAI",
-                    description: "Your AI-powered fitness companion",
-                    systemImage: "figure.strengthtraining.traditional"
+        Group {
+            switch viewModel.currentStep {
+            case 0:
+                OnboardingGoalView(
+                    selectedGoal: viewModel.answers.goal,
+                    onSelectGoal: { viewModel.selectGoal($0) },
+                    onContinue: { viewModel.goToNextStep() }
                 )
-                .tag(0)
                 
-                // Step 1: Goal selection (placeholder)
-                OnboardingStepView(
-                    title: "What's your goal?",
-                    description: "Goal selection coming soon",
-                    systemImage: "target"
-                )
-                .tag(1)
-                
-                // Step 2: Experience (placeholder)
-                OnboardingStepView(
-                    title: "Your experience level?",
-                    description: "Experience question coming soon",
-                    systemImage: "chart.line.uptrend.xyaxis"
-                )
-                .tag(2)
-                
-                // Step 3: Final
-                OnboardingStepView(
-                    title: "All set!",
-                    description: "Let's start your fitness journey",
-                    systemImage: "checkmark.circle.fill"
-                )
-                .tag(3)
-            }
-            .disabled(true) // Disable swipe, use buttons only
-            
-            // Navigation buttons
-            HStack {
-                if viewModel.currentStep > 0 {
-                    Button(action: {
-                        viewModel.previousStep()
-                    }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                            Text("Back")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(12)
-                    }
-                } else {
+            default:
+                // For now, show a simple placeholder Text("Next screen coming soon")
+                VStack {
                     Spacer()
-                        .frame(maxWidth: .infinity)
+                    Text("Next onboarding step")
+                        .font(.title2)
+                    Spacer()
                 }
-                
-                Spacer()
-                    .frame(width: 16)
-                
-                Button(action: {
-                    if viewModel.currentStep < viewModel.stepsCount - 1 {
-                        viewModel.nextStep()
-                    } else {
-                        viewModel.completeOnboarding(onFinished: onFinished)
-                    }
-                }) {
-                    HStack {
-                        Text(viewModel.currentStep < viewModel.stepsCount - 1 ? "Next" : "Get Started")
-                        if viewModel.currentStep < viewModel.stepsCount - 1 {
-                            Image(systemName: "chevron.right")
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
+                .background(Color(.systemBackground))
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 40)
         }
-        .background(Color.white)
     }
 }
 

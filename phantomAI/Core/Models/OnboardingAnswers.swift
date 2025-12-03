@@ -8,12 +8,20 @@
 import Foundation
 
 /// Stores user answers from the onboarding flow
-/// Placeholder structure for future real questions
 struct OnboardingAnswers: Codable {
-    var goal: String?
-    var experience: String?
-    var schedule: String?
+    var goal: FitnessGoal?
     
-    // Placeholder for future real questions
+    // TODO: add experience, schedule, equipment, etc. later
+}
+
+/// Fitness goal options for onboarding
+enum FitnessGoal: String, CaseIterable, Codable, Identifiable {
+    case buildMuscle = "Build muscle"
+    case loseFat = "Lose fat"
+    case getStronger = "Get stronger"
+    case recomposition = "Recomp"
+    case generalFitness = "General fitness"
+    
+    var id: String { rawValue }
 }
 
