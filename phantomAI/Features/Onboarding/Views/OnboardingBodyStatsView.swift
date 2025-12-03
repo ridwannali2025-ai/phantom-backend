@@ -29,6 +29,6 @@ struct OnboardingBodyStatsView: View {
 }
 
 #Preview {
-    OnboardingBodyStatsView(viewModel: OnboardingViewModel())
+    OnboardingBodyStatsView(viewModel: .preview)
 }
 

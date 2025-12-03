@@ -29,6 +29,6 @@ struct OnboardingEquipmentView: View {
 }
 
 #Preview {
-    OnboardingEquipmentView(viewModel: OnboardingViewModel())
+    OnboardingEquipmentView(viewModel: .preview)
 }
 

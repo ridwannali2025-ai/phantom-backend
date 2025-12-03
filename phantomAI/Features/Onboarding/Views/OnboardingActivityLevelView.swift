@@ -32,3 +32,4 @@ struct OnboardingActivityLevelView: View {
     OnboardingActivityLevelView(viewModel: OnboardingViewModel())
 }
 
+

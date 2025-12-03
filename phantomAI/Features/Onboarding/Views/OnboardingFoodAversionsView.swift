@@ -32,3 +32,4 @@ struct OnboardingFoodAversionsView: View {
     OnboardingFoodAversionsView(viewModel: OnboardingViewModel())
 }
 
+

@@ -32,3 +32,4 @@ struct OnboardingPastBlockersView: View {
     OnboardingPastBlockersView(viewModel: OnboardingViewModel())
 }
 
+

@@ -1,0 +1,31 @@
+// ===========================
+//  CONFIG EXAMPLE (PUBLIC)
+//  Copy to Config.xcconfig and replace values
+// ===========================
+
+// ----------- OPENAI -----------
+OPENAI_API_KEY = YOUR_OPENAI_API_KEY_HERE
+
+// ----------- SUPABASE -----------
+SUPABASE_URL = https://YOUR-SUPABASE-PROJECT.supabase.co
+SUPABASE_ANON_KEY = YOUR_SUPABASE_PUBLIC_ANON_KEY_HERE
+// DO NOT EVER PUT THE SERVICE ROLE KEY HERE
+
+// ----------- FIREBASE -----------
+FIREBASE_API_KEY = YOUR_FIREBASE_API_KEY_HERE
+FIREBASE_PROJECT_ID = YOUR_FIREBASE_PROJECT_ID
+FIREBASE_APP_ID = YOUR_FIREBASE_APP_ID
+FIREBASE_SENDER_ID = YOUR_FIREBASE_SENDER_ID
+
+// ----------- MIXPANEL -----------
+MIXPANEL_PROJECT_TOKEN = YOUR_MIXPANEL_PROJECT_TOKEN
+
+// ----------- ADJUST -----------
+ADJUST_APP_TOKEN = YOUR_ADJUST_APP_TOKEN
+ADJUST_ENVIRONMENT = sandbox   // or production
+
+// ----------- SUPERWALL -----------
+SUPERWALL_API_KEY = YOUR_SUPERWALL_API_KEY
+
+// ----------- APP SETTINGS -----------
+APP_ENV = development   // development | staging | production

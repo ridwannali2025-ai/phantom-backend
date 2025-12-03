@@ -32,3 +32,4 @@ struct OnboardingInjuriesView: View {
     OnboardingInjuriesView(viewModel: OnboardingViewModel())
 }
 
+

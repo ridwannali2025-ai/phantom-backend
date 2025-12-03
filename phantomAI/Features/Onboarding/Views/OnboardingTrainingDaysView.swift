@@ -32,3 +32,4 @@ struct OnboardingTrainingDaysView: View {
     OnboardingTrainingDaysView(viewModel: OnboardingViewModel())
 }
 
+

@@ -29,6 +29,6 @@ struct OnboardingSleepView: View {
 }
 
 #Preview {
-    OnboardingSleepView(viewModel: OnboardingViewModel())
+    OnboardingSleepView(viewModel: .preview)
 }
 

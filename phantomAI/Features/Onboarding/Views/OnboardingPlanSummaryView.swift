@@ -29,6 +29,6 @@ struct OnboardingPlanSummaryView: View {
 }
 
 #Preview {
-    OnboardingPlanSummaryView(viewModel: OnboardingViewModel())
+    OnboardingPlanSummaryView(viewModel: .preview)
 }
 

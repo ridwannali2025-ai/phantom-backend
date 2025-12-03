@@ -62,10 +62,31 @@ enum PrimaryGoal: String, CaseIterable, Identifiable, Codable {
     case buildMuscle = "Build muscle"
     case loseFat = "Lose fat"
     case getStronger = "Get stronger"
-    case recomposition = "Recomp"
+    case improveEndurance = "Improve endurance"
     case generalFitness = "General fitness"
     
     var id: String { rawValue }
+    
+    var title: String {
+        switch self {
+        case .buildMuscle: return "Build Muscle"
+        case .loseFat: return "Lose Fat"
+        case .getStronger: return "Get Stronger"
+        case .improveEndurance: return "Improve Endurance"
+        case .generalFitness: return "General Fitness"
+        }
+    }
+    
+    /// SF Symbols icon for each goal (visual pill selector)
+    var symbolName: String {
+        switch self {
+        case .buildMuscle: return "dumbbell"
+        case .loseFat: return "flame.fill"
+        case .getStronger: return "bolt.fill"
+        case .improveEndurance: return "figure.run"
+        case .generalFitness: return "heart.fill"
+        }
+    }
 }
 
 /// Goal timeline preference
@@ -190,7 +211,7 @@ enum FitnessGoal: String, CaseIterable, Codable, Identifiable {
     case buildMuscle = "Build muscle"
     case loseFat = "Lose fat"
     case getStronger = "Get stronger"
-    case recomposition = "Recomp"
+    case improveEndurance = "Improve endurance"
     case generalFitness = "General fitness"
     
     var id: String { rawValue }

@@ -32,3 +32,4 @@ struct OnboardingSplitPreferenceView: View {
     OnboardingSplitPreferenceView(viewModel: OnboardingViewModel())
 }
 
+

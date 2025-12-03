@@ -8,21 +8,16 @@
 import SwiftUI
 
 /// Reusable selectable card component for onboarding screens
-struct OnboardingSelectableCard: View {
-    let title: String
-    let subtitle: String?
+struct OnboardingSelectableCard<Content: View>: View {
     let isSelected: Bool
+    let content: Content
     let onTap: () -> Void
     
-    init(title: String, subtitle: String? = nil, isSelected: Bool, onTap: @escaping () -> Void) {
-        self.title = title
-        self.subtitle = subtitle
+    // Legacy initializer for backward compatibility
+    init(title: String, subtitle: String? = nil, isSelected: Bool, onTap: @escaping () -> Void) where Content == AnyView {
         self.isSelected = isSelected
         self.onTap = onTap
-    }
-    
-    var body: some View {
-        Button(action: onTap) {
+        self.content = AnyView(
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold))
@@ -38,16 +33,29 @@ struct OnboardingSelectableCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 70)
             .padding(.horizontal, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color(hex: "A06AFE") : Color(hex: "F7F7F7"))
-            )
-            .shadow(
-                color: isSelected ? Color(hex: "A06AFE").opacity(0.20) : Color.clear,
-                radius: 24,
-                x: 0,
-                y: 8
-            )
+        )
+    }
+    
+    // New initializer with custom content
+    init(isSelected: Bool, @ViewBuilder content: () -> Content, onTap: @escaping () -> Void) {
+        self.isSelected = isSelected
+        self.content = content()
+        self.onTap = onTap
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            content
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(isSelected ? Color(hex: "A06AFE") : Color(hex: "F7F7F7"))
+                )
+                .shadow(
+                    color: isSelected ? Color(hex: "A06AFE").opacity(0.25) : Color.clear,
+                    radius: 24,
+                    x: 0,
+                    y: 8
+                )
         }
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: isSelected)

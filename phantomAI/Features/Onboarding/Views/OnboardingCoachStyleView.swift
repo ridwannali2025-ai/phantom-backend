@@ -29,6 +29,6 @@ struct OnboardingCoachStyleView: View {
 }
 
 #Preview {
-    OnboardingCoachStyleView(viewModel: OnboardingViewModel())
+    OnboardingCoachStyleView(viewModel: .preview)
 }
 

@@ -12,8 +12,6 @@ struct OnboardingHeaderView: View {
     let currentStep: OnboardingStep
     let onBack: (() -> Void)?
     
-    private let totalPhases = 4
-    
     init(currentStep: OnboardingStep, onBack: (() -> Void)? = nil) {
         self.currentStep = currentStep
         self.onBack = onBack
@@ -36,15 +34,6 @@ struct OnboardingHeaderView: View {
                 }
                 
                 Spacer()
-                
-                // Phase indicator
-                phaseIndicator(activePhase: currentStep.phase)
-                
-                Spacer()
-                
-                // Balance spacer
-                Spacer()
-                    .frame(width: 44, height: 44)
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)
@@ -61,38 +50,6 @@ struct OnboardingHeaderView: View {
         let current = Double(currentStep.stepIndex)
         let total = Double(OnboardingStep.totalSteps)
         return current / total
-    }
-    
-    /// Maps OnboardingPhase to index (0-3)
-    private func phaseIndex(for phase: OnboardingPhase) -> Int {
-        switch phase {
-        case .trustBuilder: return 0
-        case .foundation: return 1
-        case .workoutEngine: return 2
-        case .nutritionPaywall: return 3
-        }
-    }
-    
-    /// Phase indicator with pills and dots
-    private func phaseIndicator(activePhase: OnboardingPhase) -> some View {
-        HStack(spacing: 8) {
-            ForEach(OnboardingPhase.allCases, id: \.rawValue) { phase in
-                if phase == activePhase {
-                    // Active phase: long pill
-                    Capsule()
-                        .fill(Color(hex: "A06AFE"))
-                        .frame(width: 24, height: 8)
-                        .animation(.easeInOut(duration: 0.25), value: activePhase)
-                } else {
-                    // Completed or future phase: small circle
-                    Circle()
-                        .fill(phaseIndex(for: phase) < phaseIndex(for: activePhase) 
-                              ? Color(hex: "A06AFE") 
-                              : Color(hex: "E5E5EA"))
-                        .frame(width: 8, height: 8)
-                }
-            }
-        }
     }
     
     /// Progress bar showing overall step progress
