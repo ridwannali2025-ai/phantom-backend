@@ -1,0 +1,110 @@
+//
+//  WelcomeView.swift
+//  phantomAI
+//
+//  Created by Ridwan Ali on 12/1/25.
+//
+
+import SwiftUI
+
+struct WelcomeView: View {
+    let onGetStarted: () -> Void
+    let onSignIn: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            
+            // Logo
+            Image("appLogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 80, height: 80)
+                .padding(.bottom, 40)
+            
+            // Title
+            Text("Your AI Trainer Awaits")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundColor(Color(hex: "1D1D1F"))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 16)
+            
+            // Subtitle
+            Text("Personalized workouts, nutrition guidance, and progress tracking—all powered by AI")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(hex: "8A8A8E"))
+                .multilineTextAlignment(.center)
+                .lineLimit(nil)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 48)
+            
+            // Get Started Button
+            Button(action: onGetStarted) {
+                Text("Get Started")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: "A06AFE"),
+                                Color(hex: "7366FF")
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(26)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+            
+            // Sign In Button
+            Button(action: onSignIn) {
+                Text("Sign In")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(hex: "7366FF"))
+            }
+            .padding(.bottom, 40)
+            
+            Spacer()
+        }
+        .background(Color(.systemBackground))
+    }
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
+}
+
+#Preview {
+    WelcomeView(
+        onGetStarted: {},
+        onSignIn: {}
+    )
+}
+

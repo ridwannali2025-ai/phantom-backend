@@ -11,6 +11,8 @@ import Foundation
 enum AppStartDestination {
     /// Show welcome screen for users who haven't signed in
     case welcome
+    /// Show authentication screen
+    case auth
     /// Show onboarding flow for new users who have signed in but not completed onboarding
     case onboarding
     /// Show main app interface for returning users with onboarding completed

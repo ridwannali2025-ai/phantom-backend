@@ -32,57 +32,36 @@ final class AuthViewModel: ObservableObject {
     func signInWithApple() async {
         state = .loading
         
-        // TODO: Implement Sign in with Apple
+        // TODO: Integrate real Supabase + Sign in with Apple
         // 1. Request Apple ID credential
         // 2. Exchange credential for Supabase token
         // 3. Set currentUserId in authService
         
-        // Simulate success for now - use dummy credentials to trigger mock sign in
-        do {
-            try await authService.signIn(email: "apple@example.com", password: "dummy")
-            state = .signedIn
-        } catch {
-            // For development, simulate success even if error occurs
-            // TODO: Remove this and handle real errors in production
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            state = .signedIn
-        }
+        try? await Task.sleep(nanoseconds: 400_000_000) // small delay
+        state = .signedIn
     }
     
     /// Sign in with Google
     func signInWithGoogle() async {
         state = .loading
         
-        // TODO: Implement Sign in with Google
+        // TODO: Integrate real Supabase + Sign in with Google
         // 1. Request Google OAuth credential
         // 2. Exchange credential for Supabase token
         // 3. Set currentUserId in authService
         
-        // Simulate success for now - use dummy credentials to trigger mock sign in
-        do {
-            try await authService.signIn(email: "google@example.com", password: "dummy")
-            state = .signedIn
-        } catch {
-            // For development, simulate success even if error occurs
-            // TODO: Remove this and handle real errors in production
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            state = .signedIn
-        }
+        try? await Task.sleep(nanoseconds: 400_000_000) // small delay
+        state = .signedIn
     }
     
     /// Sign in with email and password
     func signInWithEmail(email: String, password: String) async {
         state = .loading
         
-        do {
-            // Call the auth service (works with mock, will need real implementation for production)
-            try await authService.signIn(email: email, password: password)
-            state = .signedIn
-        } catch {
-            // For development with mock service, this shouldn't happen
-            // TODO: Handle real errors in production
-            state = .error(error.localizedDescription)
-        }
+        // TODO: Integrate real Supabase email/password authentication
+        // For now, simulate success
+        try? await Task.sleep(nanoseconds: 400_000_000) // small delay
+        state = .signedIn
     }
 }
 

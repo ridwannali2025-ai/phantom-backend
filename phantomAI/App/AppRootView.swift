@@ -21,7 +21,7 @@ struct AppRootView: View {
                     onGetStarted: {
                         showingAuth = true
                     },
-                    onAlreadyHaveAccount: {
+                    onSignIn: {
                         showingAuth = true
                     }
                 )
@@ -30,6 +30,12 @@ struct AppRootView: View {
                         // User signed in - determine next step
                         handleSignedIn()
                     }
+                }
+                
+            case .auth:
+                AuthView(container: container) {
+                    // User signed in - determine next step
+                    handleSignedIn()
                 }
                 
             case .onboarding:
@@ -52,6 +58,11 @@ struct AppRootView: View {
     
     /// Determine the initial destination when the app launches
     private func determineStartDestination() {
+        // TEMP: always start at Welcome while we build onboarding
+        startDestination = .welcome
+        
+        // TODO: restore real logic later:
+        /*
         let hasUserId = container.authService.currentUserId != nil
         let isOnboardingCompleted = container.localStorageService.isOnboardingCompleted()
         
@@ -62,6 +73,7 @@ struct AppRootView: View {
         } else {
             startDestination = .main
         }
+        */
     }
     
     /// Handle successful authentication
