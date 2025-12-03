@@ -1,5 +1,5 @@
 //
-//  OnboardingExperienceView.swift
+//  OnboardingActivityLevelView.swift
 //  phantomAI
 //
 //  Created by Ridwan Ali on 12/1/25.
@@ -7,17 +7,16 @@
 
 import SwiftUI
 
-/// Onboarding screen for selecting training experience
-struct OnboardingExperienceView: View {
+struct OnboardingActivityLevelView: View {
     @ObservedObject var viewModel: OnboardingViewModel
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("Experience Level")
+            Text("Activity Level")
                 .font(.title)
                 .bold()
 
-            Text("Placeholder UI for the experience level step. We will design this later.")
+            Text("Placeholder UI for the activity level step. We will design this later.")
                 .multilineTextAlignment(.center)
 
             Button("Continue") {
@@ -30,6 +29,6 @@ struct OnboardingExperienceView: View {
 }
 
 #Preview {
-    OnboardingExperienceView(viewModel: OnboardingViewModel())
+    OnboardingActivityLevelView(viewModel: OnboardingViewModel())
 }
 

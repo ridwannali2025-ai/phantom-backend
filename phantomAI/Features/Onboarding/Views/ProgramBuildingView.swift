@@ -25,8 +25,7 @@ struct ProgramBuildingView: View {
         VStack(spacing: 0) {
             // Header
             OnboardingHeaderView(
-                currentStep: OnboardingStep.processing.stepIndex,
-                totalSteps: OnboardingStep.totalSteps,
+                currentStep: .aiAnalysis,
                 onBack: nil // no back from processing
             )
             .padding(.top, 8)

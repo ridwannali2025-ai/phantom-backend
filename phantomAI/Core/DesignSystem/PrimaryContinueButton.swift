@@ -16,7 +16,7 @@ struct PrimaryContinueButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
@@ -32,11 +32,11 @@ struct PrimaryContinueButton: View {
                                 endPoint: .trailing
                             )
                         } else {
-                            Color.gray.opacity(0.3)
+                            Color(hex: "D1D1D6")
                         }
                     }
                 )
-                .cornerRadius(16)
+                .clipShape(Capsule())
         }
         .disabled(!isEnabled)
     }

@@ -15,36 +15,39 @@ struct OnboardingScheduleView: View {
     let onBack: (() -> Void)?
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 24) {
             // Header
             OnboardingHeaderView(
-                currentStep: OnboardingStep.trainingDaysPerWeek.stepIndex,
-                totalSteps: OnboardingStep.totalSteps,
+                currentStep: .trainingDays,
                 onBack: onBack
             )
-            .padding(.top, 8)
             
-            // Title and subtitle
-            VStack(alignment: .leading, spacing: 8) {
-                Text("How often can you train?")
-                    .font(.system(size: 24, weight: .semibold))
-                Text("Be realistic—consistency beats perfection.")
-                    .font(.system(size: 16))
-                    .foregroundColor(Color(hex: "8A8A8E"))
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
+            // Title
+            Text("How often can you train?")
+                .font(.system(size: 34, weight: .bold))
+                .foregroundColor(Color(hex: "1D1D1F"))
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
             
-            Spacer(minLength: 24)
+            // Subtitle
+            Text("Be realistic—consistency beats perfection.")
+                .font(.system(size: 16))
+                .foregroundColor(Color(hex: "8A8A8E"))
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
             
             // Schedule selection cards
-            VStack(spacing: 16) {
-                card("3 Days per Week", "Perfect for busy schedules", 3)
-                card("4 Days per Week", "Great balance of training and recovery", 4)
-                card("5 Days per Week", "Dedicated training schedule", 5)
-                card("6+ Days per Week", "High-frequency training", 6)
+            ScrollView {
+                VStack(spacing: 18) {
+                    card("3 Days per Week", "Perfect for busy schedules", 3)
+                    card("4 Days per Week", "Great balance of training and recovery", 4)
+                    card("5 Days per Week", "Dedicated training schedule", 5)
+                    card("6+ Days per Week", "High-frequency training", 6)
+                }
+                .padding(.horizontal, 24)
             }
-            .padding(.horizontal, 24)
             
             Spacer()
             

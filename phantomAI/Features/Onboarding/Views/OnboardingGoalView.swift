@@ -27,36 +27,32 @@ struct OnboardingGoalView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 24) {
             // Header
             OnboardingHeaderView(
-                currentStep: OnboardingStep.primaryGoal.stepIndex,
-                totalSteps: OnboardingStep.totalSteps,
+                currentStep: .primaryGoal,
                 onBack: onBack
             )
-            .padding(.top, 8)
-            
-            Spacer()
             
             // Title
             Text("What's your main fitness goal?")
-                .font(.title2)
-                .bold()
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 12)
+                .font(.system(size: 34, weight: .bold))
+                .foregroundColor(Color(hex: "1D1D1F"))
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
             
             // Subtitle
-            Text("We'll tailor your program based on this.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 32)
+            Text("We'll customize your program based on your primary objective")
+                .font(.system(size: 16))
+                .foregroundColor(Color(hex: "8A8A8E"))
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
             
             // Goal selection cards
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: 18) {
                     ForEach(FitnessGoal.allCases) { goal in
                         OnboardingSelectableCard(
                             title: goal.rawValue,
@@ -80,7 +76,7 @@ struct OnboardingGoalView: View {
                 action: onContinue
             )
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.bottom, 24)
         }
         .background(Color(.systemBackground))
     }

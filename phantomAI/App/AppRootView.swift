@@ -40,12 +40,7 @@ struct AppRootView: View {
                 }
                 
             case .onboarding:
-                OnboardingView(container: container) {
-                    // Onboarding completed - switch to main app
-                    withAnimation {
-                        startDestination = .main
-                    }
-                }
+                OnboardingFlowView()
                 
             case .main:
                 RootTabView()
