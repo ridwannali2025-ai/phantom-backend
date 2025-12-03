@@ -27,8 +27,9 @@ struct AppRootView: View {
                 )
                 .fullScreenCover(isPresented: $showingAuth) {
                     AuthView(container: container) {
-                        // User signed in - determine next step
-                        handleSignedIn()
+                        // User signed in - go to onboarding
+                        startDestination = .onboarding
+                        showingAuth = false
                     }
                 }
                 

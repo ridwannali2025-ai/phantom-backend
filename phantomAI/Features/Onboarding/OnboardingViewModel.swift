@@ -28,6 +28,16 @@ final class OnboardingViewModel: ObservableObject {
         answers.goal = goal
     }
     
+    /// Select training days per week
+    func selectTrainingDays(_ days: Int) {
+        answers.trainingDaysPerWeek = days
+    }
+    
+    /// Move to the previous step
+    func goToPreviousStep() {
+        previousStep()
+    }
+    
     /// Move to the next step
     func goToNextStep() {
         // For now, just increment currentStep by 1 with bounds checking

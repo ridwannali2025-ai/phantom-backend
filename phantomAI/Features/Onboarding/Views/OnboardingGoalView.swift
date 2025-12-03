@@ -12,9 +12,30 @@ struct OnboardingGoalView: View {
     let selectedGoal: FitnessGoal?
     let onSelectGoal: (FitnessGoal) -> Void
     let onContinue: () -> Void
+    let onBack: (() -> Void)?
+    
+    init(
+        selectedGoal: FitnessGoal?,
+        onSelectGoal: @escaping (FitnessGoal) -> Void,
+        onContinue: @escaping () -> Void,
+        onBack: (() -> Void)? = nil
+    ) {
+        self.selectedGoal = selectedGoal
+        self.onSelectGoal = onSelectGoal
+        self.onContinue = onContinue
+        self.onBack = onBack
+    }
     
     var body: some View {
         VStack(spacing: 0) {
+            // Header
+            OnboardingHeaderView(
+                currentStep: 0,
+                totalSteps: 4,
+                onBack: onBack
+            )
+            .padding(.top, 8)
+            
             Spacer()
             
             // Title
@@ -37,8 +58,9 @@ struct OnboardingGoalView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     ForEach(FitnessGoal.allCases) { goal in
-                        GoalCard(
-                            goal: goal,
+                        OnboardingSelectableCard(
+                            title: goal.rawValue,
+                            subtitle: nil,
                             isSelected: selectedGoal == goal,
                             onTap: {
                                 onSelectGoal(goal)
@@ -52,56 +74,15 @@ struct OnboardingGoalView: View {
             Spacer()
             
             // Continue button
-            Button(action: onContinue) {
-                Text("Continue")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(selectedGoal != nil ? Color.accentColor : Color.gray.opacity(0.3))
-                    .cornerRadius(12)
-            }
-            .disabled(selectedGoal == nil)
+            PrimaryContinueButton(
+                title: "Continue",
+                isEnabled: selectedGoal != nil,
+                action: onContinue
+            )
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
         }
         .background(Color(.systemBackground))
-    }
-}
-
-/// Individual goal selection card
-private struct GoalCard: View {
-    let goal: FitnessGoal
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack {
-                Text(goal.rawValue)
-                    .font(.body)
-                    .foregroundColor(isSelected ? .white : .primary)
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.white)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.accentColor : Color(.systemGray6))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
-            )
-        }
-        .buttonStyle(.plain)
     }
 }
 

@@ -10,8 +10,9 @@ import Foundation
 /// Stores user answers from the onboarding flow
 struct OnboardingAnswers: Codable {
     var goal: FitnessGoal?
+    var trainingDaysPerWeek: Int?
     
-    // TODO: add experience, schedule, equipment, etc. later
+    // TODO: add experience, equipment, etc. later
 }
 
 /// Fitness goal options for onboarding

@@ -25,7 +25,16 @@ struct OnboardingView: View {
                 OnboardingGoalView(
                     selectedGoal: viewModel.answers.goal,
                     onSelectGoal: { viewModel.selectGoal($0) },
-                    onContinue: { viewModel.goToNextStep() }
+                    onContinue: { viewModel.goToNextStep() },
+                    onBack: nil
+                )
+                
+            case 1:
+                OnboardingScheduleView(
+                    selectedDays: viewModel.answers.trainingDaysPerWeek,
+                    onSelectDays: { viewModel.selectTrainingDays($0) },
+                    onContinue: { viewModel.goToNextStep() },
+                    onBack: { viewModel.goToPreviousStep() }
                 )
                 
             default:
