@@ -16,10 +16,10 @@ final class VercelAIService: AIService {
         self.baseURL = baseURL
     }
     
-    func buildProgram(for profile: UserProfile) async throws -> Program {
+    func buildProgram(for request: ProgramRequest) async throws -> Program {
         // TODO: Implement Vercel API call to build program
         // 1. Construct POST request to {baseURL}/api/build-program
-        // 2. Encode UserProfile to JSON and include in request body
+        // 2. Encode ProgramRequest to JSON and include in request body
         // 3. Add Content-Type: application/json header
         // 4. Make async network request using URLSession
         // 5. Parse JSON response and decode to Program model

@@ -16,11 +16,11 @@ struct OnboardingAnswers: Codable {
     var pastBarriers: [PastBarrier] = []       // consistency, nutrition, injury, etc.
     
     // Phase 2 – Biometric & lifestyle
-    var sex: BiologicalSex?
-    var age: Int?
     var heightCm: Double?
     var weightKg: Double?
-    var activityLevel: ActivityLevel?          // sedentary, lightly active, etc.
+    var age: Int?
+    var sex: SexType?
+    var activityLevel: ActivityLevel?
     var sleepHours: Double?                    // 4–10 hours
     var workoutTime: WorkoutTime?              // morning, lunch, evening, flexible
     
@@ -28,6 +28,7 @@ struct OnboardingAnswers: Codable {
     var equipment: [EquipmentOption] = []      // full gym, dumbbells, bands, bodyweight, etc.
     var trainingDaysPerWeek: Int?              // already used by schedule screen
     var trainingExperience: TrainingExperience?// already used by experience screen
+    var sessionLengthMinutes: Int?            // 30, 45, 60, 75 minutes
     var hasInjuries: Bool?
     var injuryDetails: String?
     
@@ -112,7 +113,22 @@ enum PastBarrier: String, CaseIterable, Identifiable, Codable {
 
 // MARK: - Phase 2 Enums
 
-/// Biological sex
+/// Sex type
+enum SexType: String, Codable {
+    case other
+    case male
+    case female
+    
+    var title: String {
+        switch self {
+        case .other: return "Other"
+        case .male: return "Male"
+        case .female: return "Female"
+        }
+    }
+}
+
+/// Biological sex (legacy - use SexType instead)
 enum BiologicalSex: String, CaseIterable, Identifiable, Codable {
     case male = "Male"
     case female = "Female"
@@ -124,13 +140,39 @@ enum BiologicalSex: String, CaseIterable, Identifiable, Codable {
 
 /// Activity level
 enum ActivityLevel: String, CaseIterable, Identifiable, Codable {
-    case sedentary = "Sedentary"
-    case lightlyActive = "Lightly active"
-    case moderatelyActive = "Moderately active"
-    case veryActive = "Very active"
-    case extremelyActive = "Extremely active"
+    case mostlySitting = "Mostly sitting"
+    case sometimesOnFeet = "On your feet sometimes"
+    case oftenOnFeet = "On your feet a lot"
+    case veryActive = "Very active most days"
     
     var id: String { rawValue }
+    
+    var title: String {
+        switch self {
+        case .mostlySitting: return "Mostly sitting"
+        case .sometimesOnFeet: return "On your feet sometimes"
+        case .oftenOnFeet: return "On your feet a lot"
+        case .veryActive: return "Very active most days"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .mostlySitting: return "Desk job, lots of sitting."
+        case .sometimesOnFeet: return "Mix of sitting and light movement."
+        case .oftenOnFeet: return "On the move for most of the day."
+        case .veryActive: return "Physically demanding work or very active lifestyle."
+        }
+    }
+    
+    var symbolName: String {
+        switch self {
+        case .mostlySitting: return "laptopcomputer"
+        case .sometimesOnFeet: return "figure.walk"
+        case .oftenOnFeet: return "figure.run"
+        case .veryActive: return "figure.strengthtraining.traditional"
+        }
+    }
 }
 
 /// Preferred workout time

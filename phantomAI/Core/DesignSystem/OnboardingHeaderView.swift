@@ -18,7 +18,8 @@ struct OnboardingHeaderView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 12) {
+            // Back button row
             HStack {
                 // Back button
                 if let onBack = onBack {
@@ -38,11 +39,15 @@ struct OnboardingHeaderView: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
             
-            // Progress bar
-            progressBar(progress: progressValue)
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
+            // Progress bar - single row, never wraps
+            HStack(spacing: 8) {
+                progressBar(progress: progressValue)
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .padding(.horizontal, 24)
         }
+        .frame(maxWidth: .infinity)
     }
     
     /// Computes progress value (0.0 to 1.0) based on current step index
@@ -67,6 +72,9 @@ struct OnboardingHeaderView: View {
                     .frame(width: geometry.size.width * progress, height: 3)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .fixedSize(horizontal: false, vertical: true)
+        .layoutPriority(1)
         .frame(height: 3)
         .animation(.easeInOut(duration: 0.25), value: progress)
     }

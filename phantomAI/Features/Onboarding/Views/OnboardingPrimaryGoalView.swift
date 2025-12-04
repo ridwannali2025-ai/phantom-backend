@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct OnboardingPrimaryGoalView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @EnvironmentObject var onboarding: OnboardingViewModel
+    @State private var selectedGoal: PrimaryGoal? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,7 +23,7 @@ struct OnboardingPrimaryGoalView: View {
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: false, vertical: true)
-                        
+
                         Text("We'll customize your program based on your primary objective.")
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.secondary)
@@ -45,19 +46,21 @@ struct OnboardingPrimaryGoalView: View {
             // Bottom-anchored Continue button
             PrimaryContinueButton(
                 title: "Continue",
-                isEnabled: viewModel.primaryGoal != nil,
+                isEnabled: selectedGoal != nil,
                 action: {
-                    viewModel.goNext()
+                    guard let selectedGoal else { return }
+                    onboarding.answers.primaryGoal = selectedGoal
+                    onboarding.goToNext()
                 }
             )
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
-        }
+            }
         .background(Color.white.ignoresSafeArea())
     }
 
     private func goalCard(for goal: PrimaryGoal) -> some View {
-        let isSelected = viewModel.primaryGoal == goal
+        let isSelected = selectedGoal == goal
 
         return OnboardingSelectableCard(
             isSelected: isSelected,
@@ -77,14 +80,14 @@ struct OnboardingPrimaryGoalView: View {
                     
                     // Spacer to push content left-aligned
                     Spacer()
-                }
+        }
                 .padding(.horizontal, 20)
                 .frame(height: 60)
             },
             onTap: {
                 // Smooth animation on selection
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    viewModel.primaryGoal = goal
+                    selectedGoal = goal
                 }
             }
         )
@@ -92,5 +95,6 @@ struct OnboardingPrimaryGoalView: View {
 }
 
 #Preview {
-    OnboardingPrimaryGoalView(viewModel: .preview)
+    OnboardingPrimaryGoalView()
+        .environmentObject(OnboardingViewModel.preview)
 }

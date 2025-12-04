@@ -9,8 +9,17 @@ import SwiftUI
 
 /// Final onboarding step showing program building progress
 struct ProgramBuildingView: View {
-    let onFinished: () -> Void
+    @EnvironmentObject var onboarding: OnboardingViewModel
+    @Environment(\.container) private var container
     
+    enum ProgramBuildState {
+        case idle
+        case loading
+        case success(Program)
+        case error(String)
+    }
+    
+    @State private var state: ProgramBuildState = .idle
     @State private var currentStepIndex = 0
     @State private var timer: Timer?
     
@@ -22,14 +31,33 @@ struct ProgramBuildingView: View {
     ]
     
     var body: some View {
+        // Content based on state
+        // Note: Header/progress is provided by OnboardingFlowView
+        Group {
+            switch state {
+            case .idle, .loading:
+                loadingView
+            case .success(let program):
+                successView(program: program)
+            case .error(let message):
+                errorView(message: message)
+            }
+        }
+        .background(Color(.systemBackground))
+        .onAppear {
+            if case .idle = state {
+                startProgramGeneration()
+            }
+        }
+        .onDisappear {
+            stopTimer()
+        }
+    }
+    
+    // MARK: - Loading View
+    
+    private var loadingView: some View {
         VStack(spacing: 0) {
-            // Header
-            OnboardingHeaderView(
-                currentStep: .aiAnalysis,
-                onBack: nil // no back from processing
-            )
-            .padding(.top, 8)
-            
             // Title and subtitle
             VStack(alignment: .leading, spacing: 8) {
                 Text("Designing your program…")
@@ -54,12 +82,70 @@ struct ProgramBuildingView: View {
             
             Spacer()
         }
-        .background(Color(.systemBackground))
-        .onAppear {
-            startTimer()
+    }
+    
+    // MARK: - Success View
+    
+    private func successView(program: Program) -> some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 64))
+                .foregroundColor(Color(hex: "A06AFE"))
+            
+            Text("Program Ready!")
+                .font(.system(size: 28, weight: .bold))
+            
+            VStack(spacing: 8) {
+                Text(program.name)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Text(program.description)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 32)
+            
+            Spacer()
+            
+            Button("Continue") {
+                onboarding.goToNext()
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 32)
         }
-        .onDisappear {
-            stopTimer()
+    }
+    
+    // MARK: - Error View
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 64))
+                .foregroundColor(.orange)
+            
+            Text("Something went wrong")
+                .font(.system(size: 28, weight: .bold))
+            
+            Text(message)
+                .font(.system(size: 16))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            Button("Try Again") {
+                state = .idle
+                startProgramGeneration()
+            }
+            .buttonStyle(.borderedProminent)
+            
+            Spacer()
         }
     }
     
@@ -89,6 +175,39 @@ struct ProgramBuildingView: View {
         .animation(.easeInOut, value: currentStepIndex)
     }
     
+    // MARK: - Program Generation
+    
+    private func startProgramGeneration() {
+        // Validate we can create a ProgramRequest
+        guard let request = onboarding.makeProgramRequest() else {
+            state = .error("Missing required information. Please complete all onboarding steps.")
+            return
+        }
+        
+        // Start loading state
+        state = .loading
+        startTimer()
+        
+        // Generate program using AI service
+        Task {
+            do {
+                let program = try await container.aiService.buildProgram(for: request)
+                
+                // Update UI on main thread
+                await MainActor.run {
+                    stopTimer()
+                    state = .success(program)
+                }
+            } catch {
+                // Handle error on main thread
+                await MainActor.run {
+                    stopTimer()
+                    state = .error(error.localizedDescription)
+                }
+            }
+        }
+    }
+    
     private func startTimer() {
         // Start with first step immediately
         currentStepIndex = 0
@@ -98,11 +217,8 @@ struct ProgramBuildingView: View {
             if currentStepIndex < loadingSteps.count - 1 {
                 currentStepIndex += 1
             } else {
-                stopTimer()
-                // Wait a moment before finishing
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    onFinished()
-                }
+                // Keep showing loading until program is generated
+                // Timer will be stopped when state changes to success/error
             }
         }
     }
@@ -114,8 +230,8 @@ struct ProgramBuildingView: View {
 }
 
 #Preview {
-    ProgramBuildingView {
-        print("Program building finished")
-    }
+    ProgramBuildingView()
+        .environmentObject(OnboardingViewModel.preview)
+        .environment(\.container, AppContainer.preview)
 }
 

@@ -1,5 +1,5 @@
 //
-//  OnboardingBodyStatsView.swift
+//  OnboardingWeightView.swift
 //  phantomAI
 //
 //  Created by Ridwan Ali on 12/1/25.
@@ -7,12 +7,10 @@
 
 import SwiftUI
 
-struct OnboardingBodyStatsView: View {
+struct OnboardingWeightView: View {
     @EnvironmentObject var onboarding: OnboardingViewModel
-    @State private var feet: Int = 5
-    @State private var inches: Int = 8
-    @State private var usesMetric: Bool = false
-    @State private var cm: Double = 173
+    @State private var weightValue: Double = 160
+    @State private var usesMetric: Bool = false   // false = lbs, true = kg
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,12 +20,12 @@ struct OnboardingBodyStatsView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Title & subtitle with generous spacing
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("What's your height?")
+                        Text("What's your weight?")
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                         
-                        Text("This helps your AI trainer size your plan correctly.")
+                        Text("Required to build accurate calorie + training targets.")
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -36,10 +34,10 @@ struct OnboardingBodyStatsView: View {
                     .padding(.bottom, 32)
                     .padding(.horizontal, 24)
 
-                    // Height picker card (centered)
+                    // Weight picker card (centered)
                     HStack {
                         Spacer()
-                        heightPickerCard
+                        weightPickerCard
                             .frame(maxWidth: 400)
                         Spacer()
                     }
@@ -51,16 +49,10 @@ struct OnboardingBodyStatsView: View {
             // Bottom-anchored Continue button
             PrimaryContinueButton(
                 title: "Continue",
-                isEnabled: isValid,
+                isEnabled: weightValue > 0,
                 action: {
-                    let heightCm: Double
-                    if usesMetric {
-                        heightCm = cm
-                    } else {
-                        let totalInches = Double(feet * 12 + inches)
-                        heightCm = totalInches * 2.54
-                    }
-                    onboarding.answers.heightCm = heightCm
+                    let weightKg = usesMetric ? weightValue : weightValue * 0.453592
+                    onboarding.answers.weightKg = weightKg
                     onboarding.goToNext()
                 }
             )
@@ -68,17 +60,19 @@ struct OnboardingBodyStatsView: View {
             .padding(.vertical, 16)
         }
         .background(Color.white.ignoresSafeArea())
+        .onAppear {
+            // Prefill weight if user navigates back
+            if let savedWeightKg = onboarding.answers.weightKg {
+                // Default to metric (kg) for prefilled values
+                weightValue = savedWeightKg
+                usesMetric = true
+            }
+        }
     }
     
-    // MARK: - Validation
+    // MARK: - Weight Picker Card
     
-    var isValid: Bool {
-        usesMetric ? cm > 0 : (feet > 0)
-    }
-    
-    // MARK: - Height Picker Card
-    
-    private var heightPickerCard: some View {
+    private var weightPickerCard: some View {
         VStack(spacing: 0) {
             // Unit toggle at top-right
             HStack {
@@ -90,17 +84,17 @@ struct OnboardingBodyStatsView: View {
             
             // Picker content
             if usesMetric {
-                // Metric: Centimeters
+                // Metric: Kilograms
                 HStack(spacing: 0) {
-                    Picker("Centimeters", selection: $cm) {
-                        ForEach(Array(stride(from: 100.0, through: 250.0, by: 0.5)), id: \.self) { value in
+                    Picker("Kilograms", selection: $weightValue) {
+                        ForEach(Array(stride(from: 20.0, through: 227.0, by: 0.5)), id: \.self) { value in
                             Text(String(format: "%.1f", value)).tag(value)
                         }
                     }
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
                     
-                    Text("cm")
+                    Text("kg")
                         .font(.system(size: 17, weight: .regular))
                         .foregroundColor(.secondary)
                         .padding(.leading, 12)
@@ -109,33 +103,20 @@ struct OnboardingBodyStatsView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             } else {
-                // Imperial: Feet and Inches
+                // Imperial: Pounds
                 HStack(spacing: 0) {
-                    Picker("Feet", selection: $feet) {
-                        ForEach(3..<8) { feetValue in
-                            Text("\(feetValue)").tag(feetValue)
+                    Picker("Pounds", selection: $weightValue) {
+                        ForEach(Array(stride(from: 50.0, through: 500.0, by: 1.0)), id: \.self) { value in
+                            Text(String(format: "%.0f", value)).tag(value)
                         }
                     }
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
                     
-                    Text("ft")
+                    Text("lbs")
                         .font(.system(size: 17, weight: .regular))
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 8)
-                    
-                    Picker("Inches", selection: $inches) {
-                        ForEach(0..<12) { inchesValue in
-                            Text("\(inchesValue)").tag(inchesValue)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(maxWidth: .infinity)
-                    
-                    Text("in")
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundColor(.secondary)
-                        .padding(.leading, 8)
+                        .padding(.leading, 12)
                 }
                 .frame(height: 200)
                 .padding(.horizontal, 20)
@@ -157,14 +138,11 @@ struct OnboardingBodyStatsView: View {
                 usesMetric.toggle()
                 // Convert values when switching
                 if usesMetric {
-                    // Convert feet/inches to cm
-                    let totalInches = feet * 12 + inches
-                    cm = Double(totalInches) * 2.54
+                    // Convert lbs to kg
+                    weightValue = weightValue * 0.453592
                 } else {
-                    // Convert cm to feet/inches
-                    let totalInches = Int(cm / 2.54)
-                    feet = totalInches / 12
-                    inches = totalInches % 12
+                    // Convert kg to lbs
+                    weightValue = weightValue / 0.453592
                 }
             }
         }) {
@@ -189,6 +167,7 @@ struct OnboardingBodyStatsView: View {
 }
 
 #Preview {
-    OnboardingBodyStatsView()
+    OnboardingWeightView()
         .environmentObject(OnboardingViewModel.preview)
 }
+

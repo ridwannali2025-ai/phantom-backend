@@ -46,16 +46,16 @@ struct OnboardingSelectableCard<Content: View>: View {
     var body: some View {
         Button(action: onTap) {
             content
-                .background(
+            .background(
                     RoundedRectangle(cornerRadius: 18)
-                        .fill(isSelected ? Color(hex: "A06AFE") : Color(hex: "F7F7F7"))
-                )
-                .shadow(
+                    .fill(isSelected ? Color(hex: "A06AFE") : Color(hex: "F7F7F7"))
+            )
+            .shadow(
                     color: isSelected ? Color(hex: "A06AFE").opacity(0.25) : Color.clear,
-                    radius: 24,
-                    x: 0,
-                    y: 8
-                )
+                radius: 24,
+                x: 0,
+                y: 8
+            )
         }
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: isSelected)

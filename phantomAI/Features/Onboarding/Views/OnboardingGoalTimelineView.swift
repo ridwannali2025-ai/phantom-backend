@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct OnboardingGoalTimelineView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @EnvironmentObject var onboarding: OnboardingViewModel
+    @State private var weeklyFatLoss: Double = 0.8
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,7 +40,17 @@ struct OnboardingGoalTimelineView: View {
                 title: "Continue",
                 isEnabled: true,
                 action: {
-                    viewModel.goNext()
+                    // Map weeklyFatLoss to GoalTimeline and save to answers
+                    let timeline: GoalTimeline
+                    if weeklyFatLoss < 0.55 {
+                        timeline = .sustainable
+                    } else if weeklyFatLoss <= 1.0 {
+                        timeline = .moderate
+                    } else {
+                        timeline = .aggressive
+                    }
+                    onboarding.answers.goalTimeline = timeline
+                    onboarding.goToNext()
                 }
             )
             .padding(.horizontal, 24)
@@ -73,23 +84,23 @@ struct OnboardingGoalTimelineView: View {
             HStack {
                 Image(systemName: "tortoise.fill")
                     .font(.system(size: 22))
-                    .foregroundColor(colorForDuration(.sustainable))
+                    .foregroundColor(colorForDuration(GoalTimeline.sustainable))
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Image(systemName: "hare.fill")
                     .font(.system(size: 22))
-                    .foregroundColor(colorForDuration(.moderate))
+                    .foregroundColor(colorForDuration(GoalTimeline.moderate))
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 Image(systemName: "figure.run")
                     .font(.system(size: 22))
-                    .foregroundColor(colorForDuration(.aggressive))
+                    .foregroundColor(colorForDuration(GoalTimeline.aggressive))
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding(.bottom, 12)
             
             // Slider
-            Slider(value: $viewModel.weeklyFatLoss, in: 0.3...1.5, step: 0.1)
+            Slider(value: $weeklyFatLoss, in: 0.3...1.5, step: 0.1)
                 .tint(Color(hex: "A06AFE"))
             
             // Label row under slider
@@ -115,7 +126,7 @@ struct OnboardingGoalTimelineView: View {
             // Recommended pill-style button
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.weeklyFatLoss = 0.8
+                    weeklyFatLoss = 0.8
                 }
             }) {
                 Text("Recommended")
@@ -145,7 +156,7 @@ struct OnboardingGoalTimelineView: View {
     // MARK: - Helper Computed Properties
     
     private var currentDurationLabel: String {
-        let value = viewModel.weeklyFatLoss
+        let value = weeklyFatLoss
         if value < 0.55 {
             return "1 year"
         } else if value <= 1.0 {
@@ -155,9 +166,9 @@ struct OnboardingGoalTimelineView: View {
         }
     }
     
-    private func colorForDuration(_ timeline: OnboardingViewModel.GoalTimeline) -> Color {
-        let value = viewModel.weeklyFatLoss
-        let current: OnboardingViewModel.GoalTimeline
+    private func colorForDuration(_ timeline: GoalTimeline) -> Color {
+        let value = weeklyFatLoss
+        let current: GoalTimeline
         if value < 0.55 {
             current = .sustainable
         } else if value <= 1.0 {
@@ -170,6 +181,6 @@ struct OnboardingGoalTimelineView: View {
 }
 
 #Preview {
-    let vm = OnboardingViewModel.preview
-    return OnboardingGoalTimelineView(viewModel: vm)
+    OnboardingGoalTimelineView()
+        .environmentObject(OnboardingViewModel.preview)
 }

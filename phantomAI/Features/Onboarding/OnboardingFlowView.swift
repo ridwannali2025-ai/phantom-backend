@@ -33,16 +33,32 @@ struct OnboardingFlowView: View {
             OnboardingWelcomeView(viewModel: viewModel)
 
         case .primaryGoal:
-            OnboardingPrimaryGoalView(viewModel: viewModel)
+            OnboardingPrimaryGoalView()
+                .environmentObject(viewModel)
 
         case .goalTimeline:
-            OnboardingGoalTimelineView(viewModel: viewModel)
+            OnboardingGoalTimelineView()
+                .environmentObject(viewModel)
 
         case .bodyStats:
-            OnboardingBodyStatsView(viewModel: viewModel)
+            OnboardingBodyStatsView()
+                .environmentObject(viewModel)
+
+        case .weight:
+            OnboardingWeightView()
+                .environmentObject(viewModel)
+
+        case .age:
+            OnboardingAgeView()
+                .environmentObject(viewModel)
+
+        case .sex:
+            OnboardingSexView()
+                .environmentObject(viewModel)
 
         case .activityLevel:
-            OnboardingActivityLevelView(viewModel: viewModel)
+            OnboardingActivityLevelView()
+                .environmentObject(viewModel)
 
         case .workoutTime:
             OnboardingWorkoutTimeView(viewModel: viewModel)
@@ -54,19 +70,23 @@ struct OnboardingFlowView: View {
             OnboardingPastBlockersView(viewModel: viewModel)
 
         case .equipmentAccess:
-            OnboardingEquipmentView(viewModel: viewModel)
+            OnboardingEquipmentView()
+                .environmentObject(viewModel)
 
         case .trainingDays:
-            OnboardingTrainingDaysView(viewModel: viewModel)
+            OnboardingTrainingDaysView()
+                .environmentObject(viewModel)
 
         case .splitPreference:
             OnboardingSplitPreferenceView(viewModel: viewModel)
 
         case .sessionLength:
-            OnboardingSessionLengthView(viewModel: viewModel)
+            OnboardingSessionLengthView()
+                .environmentObject(viewModel)
 
         case .experienceLevel:
-            OnboardingExperienceView(viewModel: viewModel)
+            OnboardingExperienceView()
+                .environmentObject(viewModel)
 
         case .fitnessBenchmark:
             OnboardingBenchmarkView(viewModel: viewModel)
@@ -93,7 +113,8 @@ struct OnboardingFlowView: View {
             OnboardingConnectHealthView(viewModel: viewModel)
 
         case .aiAnalysis:
-            OnboardingAIAnalysisView(viewModel: viewModel)
+            ProgramBuildingView()
+                .environmentObject(viewModel)
 
         case .planSummary:
             OnboardingPlanSummaryView(viewModel: viewModel)
@@ -104,5 +125,7 @@ struct OnboardingFlowView: View {
 #Preview {
     OnboardingFlowView()
 }
+
+
 
 

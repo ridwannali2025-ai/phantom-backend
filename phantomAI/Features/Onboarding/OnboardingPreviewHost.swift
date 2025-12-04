@@ -39,7 +39,7 @@ struct OnboardingPreviewHost: View {
                 // .planSummary
                 viewModel.currentStep = .goalTimeline
                 // Optionally, for previewing the slider UI specifically:
-                viewModel.primaryGoal = .loseFat
+                viewModel.answers.primaryGoal = .loseFat
             }
     }
 }

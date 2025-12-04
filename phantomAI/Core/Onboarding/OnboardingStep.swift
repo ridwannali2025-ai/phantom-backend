@@ -6,7 +6,10 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
     case goalTimeline       // 3
 
     case bodyStats          // 4
-    case activityLevel      // 5
+    case weight             // 5
+    case age                // 6
+    case sex                // 7
+    case activityLevel      // 8
     case workoutTime        // 6
     case sleepHours         // 7
     case pastBlockers       // 8
@@ -50,7 +53,7 @@ extension OnboardingStep {
         case .welcome, .primaryGoal, .goalTimeline:
             return .trustBuilder
 
-        case .bodyStats, .activityLevel, .workoutTime, .sleepHours, .pastBlockers:
+        case .bodyStats, .weight, .age, .sex, .activityLevel, .workoutTime, .sleepHours, .pastBlockers:
             return .foundation
 
         case .equipmentAccess, .trainingDays, .splitPreference,
@@ -63,5 +66,7 @@ extension OnboardingStep {
         }
     }
 }
+
+
 
 
