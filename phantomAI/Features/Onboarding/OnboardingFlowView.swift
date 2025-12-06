@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingFlowView: View {
     @StateObject var viewModel: OnboardingViewModel
+    @EnvironmentObject var appState: AppState
 
     init(viewModel: OnboardingViewModel = OnboardingViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -23,6 +24,10 @@ struct OnboardingFlowView: View {
 
             contentView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onChange(of: appState.hasActiveSubscription) { oldValue, newValue in
+            // When subscription is activated, we could navigate away
+            // But for now, the AppRootView will handle showing main app
         }
     }
 
@@ -45,8 +50,9 @@ struct OnboardingFlowView: View {
             OnboardingBodyStatsView()
                 .environmentObject(viewModel)
 
+        // Legacy step; body stats (height + weight) are now collected together
         case .weight:
-            OnboardingWeightView()
+            OnboardingBodyStatsView()
                 .environmentObject(viewModel)
 
         case .age:
@@ -69,9 +75,9 @@ struct OnboardingFlowView: View {
             OnboardingSleepView()
                 .environmentObject(viewModel)
 
-        // NOTE: Placeholder – not part of active flow yet
         case .pastBlockers:
-            OnboardingPastBlockersView(viewModel: viewModel)
+            OnboardingPastBlockersView()
+                .environmentObject(viewModel)
 
         case .equipmentAccess:
             OnboardingEquipmentView()
@@ -91,6 +97,14 @@ struct OnboardingFlowView: View {
 
         case .experienceLevel:
             OnboardingExperienceView()
+                .environmentObject(viewModel)
+
+        case .coachHistory:
+            OnboardingCoachHistoryView()
+                .environmentObject(viewModel)
+
+        case .coachResults:
+            OnboardingCoachResultsView()
                 .environmentObject(viewModel)
 
         // NOTE: Placeholder – not part of active flow yet
@@ -141,12 +155,23 @@ struct OnboardingFlowView: View {
         case .planSummary:
             OnboardingPlanSummaryView()
                 .environmentObject(viewModel)
+
+        case .signUp:
+            OnboardingSignUpView()
+                .environmentObject(viewModel)
+                .environmentObject(appState)
+
+        case .paywall:
+            OnboardingPaywallView()
+                .environmentObject(viewModel)
+                .environmentObject(appState)
         }
     }
 }
 
 #Preview {
     OnboardingFlowView()
+        .environmentObject(AppState())
 }
 
 

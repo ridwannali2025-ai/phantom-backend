@@ -53,5 +53,6 @@ struct OnboardingPreviewHost: View {
 
 #Preview {
     OnboardingPreviewHost()
+        .environmentObject(AppState())
 }
 

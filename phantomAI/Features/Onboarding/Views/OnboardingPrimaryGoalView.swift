@@ -57,6 +57,12 @@ struct OnboardingPrimaryGoalView: View {
             .padding(.vertical, 16)
             }
         .background(Color.white.ignoresSafeArea())
+        .onAppear {
+            // Prefill goal if user navigates back
+            if let savedGoal = onboarding.answers.primaryGoal {
+                selectedGoal = savedGoal
+            }
+        }
     }
 
     private func goalCard(for goal: PrimaryGoal) -> some View {

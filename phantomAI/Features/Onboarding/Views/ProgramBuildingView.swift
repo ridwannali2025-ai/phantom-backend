@@ -7,50 +7,77 @@
 
 import SwiftUI
 
-/// Final onboarding step showing program building progress
+/// Premium loading screen that generates the program using AI
 struct ProgramBuildingView: View {
     @EnvironmentObject var onboarding: OnboardingViewModel
-    @Environment(\.container) private var container
+    @StateObject private var builderViewModel: ProgramBuilderViewModel
     
-    enum ProgramBuildState {
-        case idle
-        case loading
-        case success(Program)
-        case error(String)
+    init() {
+        // Initialize with placeholder - will be set in onAppear with actual answers
+        _builderViewModel = StateObject(wrappedValue: ProgramBuilderViewModel(answers: OnboardingAnswers()))
     }
     
-    @State private var state: ProgramBuildState = .idle
-    @State private var currentStepIndex = 0
-    @State private var timer: Timer?
-    
-    private let loadingSteps = [
-        "Analyzing your goals",
-        "Balancing training & recovery",
-        "Creating Week 1",
-        "Finalizing your daily plan"
-    ]
-    
     var body: some View {
-        // Content based on state
-        // Note: Header/progress is provided by OnboardingFlowView
+        // Header is already provided by OnboardingFlowView
         Group {
-            switch state {
-            case .idle, .loading:
+            if builderViewModel.error != nil {
+                errorView(message: builderViewModel.error?.localizedDescription ?? "Failed to generate program")
+            } else {
                 loadingView
-            case .success(let program):
-                successView(program: program)
-            case .error(let message):
-                errorView(message: message)
             }
         }
-        .background(Color(.systemBackground))
+        .background(
+            ZStack {
+                Color(uiColor: .systemBackground)
+                LinearGradient(
+                    colors: [
+                        Color(uiColor: .systemBackground),
+                        Color(red: 0.96, green: 0.94, blue: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .ignoresSafeArea()
+        )
         .onAppear {
-            if case .idle = state {
-                startProgramGeneration()
+            // Debug: Print full onboarding answers payload
+            print("ONBOARDING ANSWERS:", onboarding.answers)
+            
+            // Debug: Print program request
+            let request = onboarding.programRequest
+            print("PROGRAM REQUEST:", request)
+            
+            // Start building if not already started
+            if !builderViewModel.isBuilding && builderViewModel.generatedProgram == nil {
+                builderViewModel.startBuilding(with: onboarding.answers)
             }
         }
-        .onDisappear {
-            stopTimer()
+        .onChange(of: builderViewModel.generatedProgram?.id ?? "") { oldValue, newValue in
+            // When program is ready (id changes from empty to actual id), save it and navigate
+            if let program = builderViewModel.generatedProgram {
+                // Save the full program
+                onboarding.generatedProgram = program.toProgram(userId: "temp-user-id")
+                
+                // Create and save GeneratedPlan for the summary view
+                let nutritionPlan = program.nutritionPlan
+                onboarding.generatedPlan = GeneratedPlan(
+                    caloriesPerDay: nutritionPlan.targetCalories,
+                    proteinGrams: nutritionPlan.proteinGrams,
+                    carbsGrams: nutritionPlan.carbGrams,
+                    fatsGrams: nutritionPlan.fatGrams,
+                    trainingSplitTitle: "First week meal goal",
+                    trainingSplitSubtitle: "Full schedule unlocked after you start your first session."
+                )
+                
+                // Debug: Print generated plan
+                print("GENERATED PLAN CREATED:", onboarding.generatedPlan as Any)
+                
+                // Navigate to next step (plan summary)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    onboarding.goToNext()
+                }
+            }
         }
     }
     
@@ -58,65 +85,97 @@ struct ProgramBuildingView: View {
     
     private var loadingView: some View {
         VStack(spacing: 0) {
-            // Title and subtitle
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Designing your program…")
-                    .font(.system(size: 24, weight: .semibold))
-                Text("Sit tight while we tailor your training to your goals.")
-                    .font(.system(size: 16))
-                    .foregroundColor(Color(hex: "8A8A8E"))
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
+            Spacer()
             
-            Spacer(minLength: 32)
-            
-            // Loading steps
-            VStack(alignment: .leading, spacing: 16) {
-                loadingRow("Analyzing your goals", index: 0)
-                loadingRow("Balancing training & recovery", index: 1)
-                loadingRow("Creating Week 1", index: 2)
-                loadingRow("Finalizing your daily plan", index: 3)
+            VStack(spacing: 24) {
+                // Premium progress ring
+                ProgressRingView(percent: Int(builderViewModel.progress * 100))
+                
+                // Main title
+                Text("We're setting everything up for you")
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 24)
+                
+                // Dynamic subtitle with fade animation
+                Text(builderViewModel.statusText)
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 32)
+                    .animation(.easeInOut(duration: 0.3), value: builderViewModel.statusText)
             }
-            .padding(.horizontal, 24)
             
             Spacer()
+            
+            // Helper text at bottom
+            Text("Phantom is tailoring your training, nutrition, and recovery in real time.")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 40)
         }
     }
     
-    // MARK: - Success View
+    // MARK: - Progress Ring View
     
-    private func successView(program: Program) -> some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(Color(hex: "A06AFE"))
-            
-            Text("Program Ready!")
-                .font(.system(size: 28, weight: .bold))
-            
-            VStack(spacing: 8) {
-                Text(program.name)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.primary)
+    struct ProgressRingView: View {
+        let percent: Int   // 0–100
+        
+        var body: some View {
+            ZStack {
+                // Soft RadialGradient halo behind
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(hex: "A06AFE").opacity(0.15),
+                                Color(hex: "7B5CFF").opacity(0.1),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 60,
+                            endRadius: 100
+                        )
+                    )
+                    .frame(width: 200, height: 200)
+                    .blur(radius: 30)
                 
-                Text(program.description)
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+                // Background circle
+                Circle()
+                    .stroke(
+                        Color(.systemGray5).opacity(0.3),
+                        lineWidth: 18
+                    )
+                    .frame(width: 180, height: 180)
+                
+                // Progress ring with gradient
+                Circle()
+                    .trim(from: 0, to: CGFloat(percent) / 100)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "A06AFE"),
+                                Color(hex: "7B5CFF")
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: 18, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 180, height: 180)
+                    .shadow(color: Color(hex: "A06AFE").opacity(0.3), radius: 16, x: 0, y: 0)
+                    .animation(.easeOut(duration: 0.05), value: percent)
+                
+                // Percentage text in center
+                Text("\(percent)%")
+                    .font(.system(size: 64, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
             }
-            .padding(.horizontal, 32)
-            
-            Spacer()
-            
-            Button("Continue") {
-                onboarding.goToNext()
-            }
-            .buttonStyle(.borderedProminent)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .frame(width: 200, height: 200)
         }
     }
     
@@ -140,93 +199,13 @@ struct ProgramBuildingView: View {
                 .padding(.horizontal, 32)
             
             Button("Try Again") {
-                state = .idle
-                startProgramGeneration()
+                builderViewModel.startBuilding()
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color(hex: "A06AFE"))
             
             Spacer()
         }
-    }
-    
-    private func loadingRow(_ text: String, index: Int) -> some View {
-        HStack(spacing: 12) {
-            if index < currentStepIndex {
-                // Completed - show checkmark
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(Color(hex: "A06AFE"))
-                    .font(.system(size: 20))
-            } else if index == currentStepIndex {
-                // Currently processing - show spinner
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(Color(hex: "A06AFE"))
-            } else {
-                // Not started yet - show empty circle
-                Circle()
-                    .fill(Color(hex: "E5E5EA"))
-                    .frame(width: 20, height: 20)
-            }
-            
-            Text(text)
-                .font(.system(size: 16))
-        }
-        .opacity(index <= currentStepIndex ? 1.0 : 0.6)
-        .animation(.easeInOut, value: currentStepIndex)
-    }
-    
-    // MARK: - Program Generation
-    
-    private func startProgramGeneration() {
-        // Validate we can create a ProgramRequest
-        guard let request = onboarding.makeProgramRequest() else {
-            state = .error("Missing required information. Please complete all onboarding steps.")
-            return
-        }
-        
-        // Start loading state
-        state = .loading
-        startTimer()
-        
-        // Generate program using AI service
-        Task {
-            do {
-                let program = try await container.aiService.buildProgram(for: request)
-                
-                // Update UI on main thread
-                await MainActor.run {
-                    stopTimer()
-                    state = .success(program)
-                    onboarding.generatedProgram = program
-                }
-            } catch {
-                // Handle error on main thread
-                await MainActor.run {
-                    stopTimer()
-                    state = .error(error.localizedDescription)
-                }
-            }
-        }
-    }
-    
-    private func startTimer() {
-        // Start with first step immediately
-        currentStepIndex = 0
-        
-        // Advance to next step after 1.5 seconds
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { _ in
-            if currentStepIndex < loadingSteps.count - 1 {
-                currentStepIndex += 1
-            } else {
-                // Keep showing loading until program is generated
-                // Timer will be stopped when state changes to success/error
-            }
-        }
-    }
-    
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
     }
 }
 
@@ -235,4 +214,3 @@ struct ProgramBuildingView: View {
         .environmentObject(OnboardingViewModel.preview)
         .environment(\.container, AppContainer.preview)
 }
-

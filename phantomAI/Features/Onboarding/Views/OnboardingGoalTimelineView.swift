@@ -57,6 +57,20 @@ struct OnboardingGoalTimelineView: View {
             .padding(.vertical, 16)
         }
         .background(Color.white.ignoresSafeArea())
+        .onAppear {
+            // Prefill timeline if user navigates back
+            if let savedTimeline = onboarding.answers.goalTimeline {
+                // Map GoalTimeline back to weeklyFatLoss slider value
+                switch savedTimeline {
+                case .sustainable:
+                    weeklyFatLoss = 0.4
+                case .moderate:
+                    weeklyFatLoss = 0.8
+                case .aggressive:
+                    weeklyFatLoss = 1.2
+                }
+            }
+        }
     }
     
     // MARK: - Timeline Slider View

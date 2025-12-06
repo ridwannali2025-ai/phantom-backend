@@ -9,48 +9,91 @@ import SwiftUI
 
 struct OnboardingAgeView: View {
     @EnvironmentObject var onboarding: OnboardingViewModel
-    @State private var age: Int = 24
-
+    
+    @State private var selectedMonthIndex: Int = 0  // 0-based index into months array
+    @State private var selectedDay: Int = 1
+    @State private var selectedYear: Int = defaultYear
+    
+    private static var defaultYear: Int {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return currentYear - 24  // Default to 24 years old
+    }
+    
+    private let months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+    
+    private var currentYear: Int {
+        Calendar.current.component(.year, from: Date())
+    }
+    
+    private var yearRange: [Int] {
+        let minYear = currentYear - 80
+        let maxYear = currentYear - 13
+        return Array((minYear...maxYear).reversed())  // Newest year at top
+    }
+    
+    private var daysInSelectedMonth: Int {
+        let month = selectedMonthIndex + 1
+        let dateComponents = DateComponents(year: selectedYear, month: month, day: 1)
+        guard let date = Calendar.current.date(from: dateComponents),
+              let range = Calendar.current.range(of: .day, in: .month, for: date) else {
+            return 31  // Fallback
+        }
+        return range.count
+    }
+    
+    private var isValidDOB: Bool {
+        guard let age = computeAge(year: selectedYear, month: selectedMonthIndex + 1, day: selectedDay) else {
+            return false
+        }
+        return (13...80).contains(age)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // Header is already provided by OnboardingFlowView
-
+            
             ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    // Title & subtitle with generous spacing
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("How old are you?")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 32) {
+                    // Title & subtitle
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("When were you born?")
+                            .font(.system(size: 32, weight: .bold))
+                            .multilineTextAlignment(.leading)
                         
-                        Text("Your age helps us set realistic volume and recovery targets.")
-                            .font(.system(size: 15, weight: .regular))
+                        Text("This will be used to calibrate your custom plan.")
+                            .font(.system(size: 16))
                             .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.leading)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 32)
-                    .padding(.bottom, 32)
                     .padding(.horizontal, 24)
-
-                    // Age picker card (centered)
-                    HStack {
-                        Spacer()
-                        agePickerCard
-                            .frame(maxWidth: 400)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
+                    
+                    // Date picker card
+                    datePickerCard
+                        .padding(.horizontal, 24)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-
+            
             // Bottom-anchored Continue button
             PrimaryContinueButton(
                 title: "Continue",
-                isEnabled: age >= 13 && age <= 80,
+                isEnabled: isValidDOB,
                 action: {
+                    guard let age = computeAge(
+                        year: selectedYear,
+                        month: selectedMonthIndex + 1,
+                        day: selectedDay
+                    ),
+                    (13...80).contains(age) else { return }
+                    
                     onboarding.answers.age = age
+                    onboarding.answers.birthMonth = selectedMonthIndex + 1
+                    onboarding.answers.birthDay = selectedDay
+                    onboarding.answers.birthYear = selectedYear
                     onboarding.goToNext()
                 }
             )
@@ -59,41 +102,117 @@ struct OnboardingAgeView: View {
         }
         .background(Color.white.ignoresSafeArea())
         .onAppear {
-            // Prefill age if user navigates back
-            if let savedAge = onboarding.answers.age {
-                age = savedAge
+            // Prefill from existing birth date fields if available
+            if let savedMonth = onboarding.answers.birthMonth,
+               let savedDay = onboarding.answers.birthDay,
+               let savedYear = onboarding.answers.birthYear {
+                selectedMonthIndex = savedMonth - 1  // Convert 1-12 to 0-11
+                selectedDay = savedDay
+                selectedYear = savedYear
+            } else if let savedAge = onboarding.answers.age {
+                // Fallback: approximate from age
+                let approxYear = currentYear - savedAge
+                selectedYear = max(currentYear - 80, min(currentYear - 13, approxYear))
+                selectedMonthIndex = 0
+                selectedDay = 1
+            } else {
+                // Default to 24 years old
+                selectedYear = Self.defaultYear
+                selectedMonthIndex = 0
+                selectedDay = 1
             }
+        }
+        .onChange(of: selectedMonthIndex) { _, _ in
+            clampDayToValidRange()
+        }
+        .onChange(of: selectedYear) { _, _ in
+            clampDayToValidRange()
         }
     }
     
-    // MARK: - Age Picker Card
+    // MARK: - Date Picker Card
     
-    private var agePickerCard: some View {
-        VStack(spacing: 0) {
-            // Picker content
-            HStack(spacing: 0) {
-                Picker("Age", selection: $age) {
-                    ForEach(13..<81) { ageValue in
-                        Text("\(ageValue)").tag(ageValue)
+    private var datePickerCard: some View {
+        HStack(spacing: 0) {
+            // Month picker
+            GeometryReader { geometry in
+                Picker("Month", selection: $selectedMonthIndex) {
+                    ForEach(0..<months.count, id: \.self) { index in
+                        Text(months[index])
+                            .tag(index)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-                
-                Text("years")
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 12)
+                .accentColor(Color(hex: "A06AFE"))
+                .frame(width: geometry.size.width)
             }
-            .frame(height: 200)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 24)
+            
+            // Day picker
+            GeometryReader { geometry in
+                Picker("Day", selection: $selectedDay) {
+                    ForEach(1...daysInSelectedMonth, id: \.self) { day in
+                        Text("\(day)")
+                            .tag(day)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .accentColor(Color(hex: "A06AFE"))
+                .frame(width: geometry.size.width)
+            }
+            
+            // Year picker
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    Picker("Year", selection: $selectedYear) {
+                        ForEach(yearRange, id: \.self) { year in
+                            Text("\(year)")
+                                .tag(year)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .accentColor(Color(hex: "A06AFE"))
+                    .frame(width: geometry.size.width - 40)
+                    
+                    Text("year")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 8)
+                }
+            }
         }
+        .frame(height: 200)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(hex: "F7F7F7"))
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(.systemGray6))
         )
-        .padding(.top, 24)
+        .overlay(
+            // Highlight overlay for selected row (Cal AI style pill)
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(.systemGray5).opacity(0.4))
+                .frame(height: 36)
+                .allowsHitTesting(false)
+        )
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func computeAge(year: Int, month: Int, day: Int) -> Int? {
+        let dateComponents = DateComponents(year: year, month: month, day: day)
+        guard let birthDate = Calendar.current.date(from: dateComponents) else {
+            return nil
+        }
+        
+        let ageComponents = Calendar.current.dateComponents([.year], from: birthDate, to: Date())
+        return ageComponents.year
+    }
+    
+    private func clampDayToValidRange() {
+        let maxDay = daysInSelectedMonth
+        if selectedDay > maxDay {
+            selectedDay = maxDay
+        }
     }
 }
 
@@ -101,4 +220,3 @@ struct OnboardingAgeView: View {
     OnboardingAgeView()
         .environmentObject(OnboardingViewModel.preview)
 }
-

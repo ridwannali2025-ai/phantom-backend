@@ -56,6 +56,15 @@ struct ProgramRequest: Codable {
     /// Foods to avoid
     let avoidFoods: String?
     
+    /// Past blockers that have held the user back
+    let pastBlockers: [PastBlocker]?
+    
+    /// Whether user has worked with a coach before
+    let hasWorkedWithCoach: Bool?
+    
+    /// Whether user has used other fitness apps
+    let hasUsedOtherApps: Bool?
+    
     /// Coach style preference
     let coachStyle: CoachStyle?
     
@@ -70,6 +79,56 @@ struct ProgramRequest: Codable {
     
     /// Training split preference (if specified in onboarding)
     let trainingSplit: TrainingSplit?
+    
+    // MARK: - Public Initializer
+    
+    init(
+        goal: PrimaryGoal,
+        timelineMonths: Int,
+        heightCm: Double,
+        weightKg: Double,
+        age: Int,
+        sex: SexType,
+        activityLevel: ActivityLevel,
+        daysPerWeek: Int,
+        experience: TrainingExperience,
+        equipment: [EquipmentOption],
+        hasInjuries: Bool? = nil,
+        injuryDetails: String? = nil,
+        dietaryRestrictions: [DietaryRestriction]? = nil,
+        avoidFoods: String? = nil,
+        pastBlockers: [PastBlocker]? = nil,
+        hasWorkedWithCoach: Bool? = nil,
+        hasUsedOtherApps: Bool? = nil,
+        coachStyle: CoachStyle? = nil,
+        workoutTime: WorkoutTime? = nil,
+        sleepHours: Double? = nil,
+        sessionLengthMinutes: Int? = nil,
+        trainingSplit: TrainingSplit? = nil
+    ) {
+        self.goal = goal
+        self.timelineMonths = timelineMonths
+        self.heightCm = heightCm
+        self.weightKg = weightKg
+        self.age = age
+        self.sex = sex
+        self.activityLevel = activityLevel
+        self.daysPerWeek = daysPerWeek
+        self.experience = experience
+        self.equipment = equipment
+        self.hasInjuries = hasInjuries
+        self.injuryDetails = injuryDetails
+        self.dietaryRestrictions = dietaryRestrictions
+        self.avoidFoods = avoidFoods
+        self.pastBlockers = pastBlockers
+        self.hasWorkedWithCoach = hasWorkedWithCoach
+        self.hasUsedOtherApps = hasUsedOtherApps
+        self.coachStyle = coachStyle
+        self.workoutTime = workoutTime
+        self.sleepHours = sleepHours
+        self.sessionLengthMinutes = sessionLengthMinutes
+        self.trainingSplit = trainingSplit
+    }
 }
 
 // MARK: - Mapping from OnboardingAnswers
@@ -119,6 +178,9 @@ extension ProgramRequest {
         self.injuryDetails = answers.injuryDetails
         self.dietaryRestrictions = answers.dietaryRestrictions?.isEmpty == false ? answers.dietaryRestrictions : nil
         self.avoidFoods = answers.avoidFoods?.isEmpty == false ? answers.avoidFoods : nil
+        self.pastBlockers = answers.pastBlockers?.isEmpty == false ? answers.pastBlockers : nil
+        self.hasWorkedWithCoach = answers.hasWorkedWithCoach
+        self.hasUsedOtherApps = answers.hasUsedOtherApps
         self.coachStyle = answers.coachStyle
         self.workoutTime = answers.workoutTime
         self.sleepHours = answers.sleepHours

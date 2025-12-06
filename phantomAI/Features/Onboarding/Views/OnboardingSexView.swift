@@ -35,9 +35,10 @@ struct OnboardingSexView: View {
 
                     // Sex selection pills
                     VStack(spacing: 12) {
-                        sexPill(.other, label: "Other")
-                        sexPill(.male, label: "Male")
-                        sexPill(.female, label: "Female")
+                        let orderedSexes: [SexType] = [.male, .female, .other]
+                        ForEach(orderedSexes, id: \.self) { sexOption in
+                            sexPill(sexOption, label: sexOption.title)
+                        }
                     }
                     .padding(.horizontal, 24)
                 }

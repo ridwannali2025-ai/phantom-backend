@@ -66,9 +66,18 @@ struct OnboardingHeaderView: View {
                     .fill(Color(hex: "E5E5EA"))
                     .frame(height: 3)
                 
-                // Progress (purple)
+                // Progress (purple gradient)
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(Color(hex: "A06AFE"))
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "A06AFE"),
+                                Color(hex: "6C4BFF")
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .frame(width: geometry.size.width * progress, height: 3)
             }
         }

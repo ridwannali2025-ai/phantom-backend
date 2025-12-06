@@ -19,10 +19,34 @@ struct OnboardingAnswers: Codable {
     var heightCm: Double?
     var weightKg: Double?
     var age: Int?
+    var birthMonth: Int?      // 1-12
+    var birthDay: Int?         // 1-31
+    var birthYear: Int?        // Year of birth
     var sex: SexType?
+    /// Date of birth (computed from birthMonth, birthDay, birthYear)
+    var dateOfBirth: Date? {
+        get {
+            guard let year = birthYear, let month = birthMonth, let day = birthDay else { return nil }
+            var components = DateComponents()
+            components.year = year
+            components.month = month
+            components.day = day
+            return Calendar.current.date(from: components)
+        }
+        set {
+            if let date = newValue {
+                let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+                birthYear = components.year
+                birthMonth = components.month
+                birthDay = components.day
+            }
+        }
+    }
     var activityLevel: ActivityLevel?
     var sleepHours: Double?                    // 4–10 hours
     var workoutTime: WorkoutTime?              // morning, lunch, evening, flexible
+    /// Biggest things that have held them back in the past
+    var pastBlockers: [PastBlocker]? = nil
     
     // Phase 3 – Training profile
     var equipment: [EquipmentOption] = []      // full gym, dumbbells, bands, bodyweight, etc.
@@ -30,13 +54,36 @@ struct OnboardingAnswers: Codable {
     var trainingExperience: TrainingExperience?// already used by experience screen
     var sessionLengthMinutes: Int?            // 30, 45, 60, 75 minutes
     var trainingSplit: TrainingSplit?         // preferred training split (optional hint)
+    /// Has the user ever worked with a coach before? (Yes/No)
+    var hasWorkedWithCoach: Bool?
+    /// Alias for hasWorkedWithCoach (kept for API compatibility)
+    var hasUsedCoachBefore: Bool? {
+        get { hasWorkedWithCoach }
+        set { hasWorkedWithCoach = newValue }
+    }
+    /// Has the user used other fitness apps before?
+    var hasUsedOtherApps: Bool?
     var hasInjuries: Bool?
     var injuryDetails: String?
+    /// Gym access (maps to equipment but kept for clarity)
+    var gymAccess: Bool?                      // true if has full gym access
+    /// Obstacles that have held them back (similar to pastBlockers but for training context)
+    var obstacles: [PastBlocker] = []         // consistency, time, etc.
     
     // Phase 4 – Nutrition profile
     var dietaryRestrictions: [DietaryRestriction]? // vegan, dairy-free, etc.
     var avoidFoods: String?                    // free text for foods they hate
     var cookingComfort: CookingComfort?
+    /// Dietary needs (alias for dietaryRestrictions, kept for API compatibility)
+    var dietaryNeeds: [DietaryRestriction]? {
+        get { dietaryRestrictions }
+        set { dietaryRestrictions = newValue }
+    }
+    /// Food aversions (alias for avoidFoods, kept for API compatibility)
+    var foodAversions: String? {
+        get { avoidFoods }
+        set { avoidFoods = newValue }
+    }
     
     // Phase 5 – Coach persona
     var coachStyle: CoachStyle?                // supportive / challenging
@@ -110,6 +157,35 @@ enum PastBarrier: String, CaseIterable, Identifiable, Codable {
     case knowledge = "Knowledge"
     
     var id: String { rawValue }
+}
+
+/// Past blockers that have held users back from reaching their goals
+enum PastBlocker: String, CaseIterable, Identifiable, Codable {
+    case consistency = "Lack of consistency"
+    case unhealthyEating = "Unhealthy eating habits"
+    case lackOfSupport = "Lack of support"
+    case busySchedule = "Busy schedule"
+    case gymAnxiety = "Intimidation / Gym Anxiety"
+    case lackOfKnowledge = "Lack of knowledge"
+    
+    var id: String { rawValue }
+    
+    var description: String {
+        switch self {
+        case .consistency:
+            return "Hard to stay on track for more than a few weeks."
+        case .unhealthyEating:
+            return "Snacking, takeout, or late-night eating gets in the way."
+        case .lackOfSupport:
+            return "No one around you keeps you accountable."
+        case .busySchedule:
+            return "Work, school, or life makes it hard to find time."
+        case .gymAnxiety:
+            return "The gym feels overwhelming or uncomfortable."
+        case .lackOfKnowledge:
+            return "Not sure what exercises to do or how to train effectively."
+        }
+    }
 }
 
 // MARK: - Phase 2 Enums
