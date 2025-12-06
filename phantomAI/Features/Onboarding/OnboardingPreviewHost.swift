@@ -14,29 +14,36 @@ struct OnboardingPreviewHost: View {
         OnboardingFlowView(viewModel: viewModel)
             .onAppear {
                 // Change this to preview different steps:
-                // .welcome
+                // Active steps:
                 // .primaryGoal
                 // .goalTimeline
                 // .bodyStats
+                // .weight
+                // .age
+                // .sex
                 // .activityLevel
                 // .workoutTime
                 // .sleepHours
-                // .pastBlockers
                 // .equipmentAccess
                 // .trainingDays
                 // .splitPreference
                 // .sessionLength
                 // .experienceLevel
-                // .fitnessBenchmark
                 // .injuries
                 // .dietaryNeeds
-                // .cookingSkill
-                // .recentIntake
                 // .foodAversions
-                // .coachStyle
-                // .connectHealth
+                // .planTeaser
                 // .aiAnalysis
                 // .planSummary
+                //
+                // Inactive/placeholder steps (not in active flow):
+                // .welcome
+                // .pastBlockers
+                // .fitnessBenchmark
+                // .coachStyle
+                // .cookingSkill
+                // .recentIntake
+                // .connectHealth
                 viewModel.currentStep = .goalTimeline
                 // Optionally, for previewing the slider UI specifically:
                 viewModel.answers.primaryGoal = .loseFat

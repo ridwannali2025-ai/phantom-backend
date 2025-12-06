@@ -29,11 +29,12 @@ struct OnboardingAnswers: Codable {
     var trainingDaysPerWeek: Int?              // already used by schedule screen
     var trainingExperience: TrainingExperience?// already used by experience screen
     var sessionLengthMinutes: Int?            // 30, 45, 60, 75 minutes
+    var trainingSplit: TrainingSplit?         // preferred training split (optional hint)
     var hasInjuries: Bool?
     var injuryDetails: String?
     
     // Phase 4 – Nutrition profile
-    var dietaryRestrictions: [DietaryRestriction] = [] // vegan, dairy-free, etc.
+    var dietaryRestrictions: [DietaryRestriction]? // vegan, dairy-free, etc.
     var avoidFoods: String?                    // free text for foods they hate
     var cookingComfort: CookingComfort?
     
@@ -209,10 +210,22 @@ enum TrainingExperience: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
 }
 
+/// Training split preference
+enum TrainingSplit: String, CaseIterable, Identifiable, Codable {
+    case fullBody = "Full body"
+    case upperLower = "Upper / Lower"
+    case pushPullLegs = "Push / Pull / Legs"
+    case upperLowerPushPullLegs = "UL + PPL hybrid"
+    case custom = "No preference / Let AI decide"
+    
+    var id: String { rawValue }
+}
+
 // MARK: - Phase 4 Enums
 
 /// Dietary restrictions
 enum DietaryRestriction: String, CaseIterable, Identifiable, Codable {
+    case none = "No restrictions"
     case vegan = "Vegan"
     case vegetarian = "Vegetarian"
     case dairyFree = "Dairy-free"
@@ -221,6 +234,8 @@ enum DietaryRestriction: String, CaseIterable, Identifiable, Codable {
     case pescatarian = "Pescatarian"
     case keto = "Keto"
     case paleo = "Paleo"
+    case halal = "Halal"
+    case kosher = "Kosher"
     
     var id: String { rawValue }
 }
@@ -239,11 +254,25 @@ enum CookingComfort: String, CaseIterable, Identifiable, Codable {
 
 /// Coach style preference
 enum CoachStyle: String, CaseIterable, Identifiable, Codable {
-    case supportive = "Supportive"
-    case challenging = "Challenging"
-    case balanced = "Balanced"
+    case direct = "Direct & No-Nonsense"
+    case motivational = "Motivational & Energetic"
+    case supportive = "Supportive & Friendly"
+    case minimal = "Minimal / Quiet"
     
     var id: String { rawValue }
+    
+    var description: String {
+        switch self {
+        case .direct:
+            return "Straight to the point with clear instructions."
+        case .motivational:
+            return "Encouraging, energetic, and hype-driven."
+        case .supportive:
+            return "Friendly, positive, and partnership-focused."
+        case .minimal:
+            return "Just the essentials. No extra messages."
+        }
+    }
 }
 
 // MARK: - Legacy Enums (for backward compatibility)

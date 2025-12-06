@@ -27,10 +27,11 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
     case recentIntake       // 18
     case foodAversions      // 19
     case coachStyle         // 20
-
-    case connectHealth      // 21
-    case aiAnalysis         // 22
-    case planSummary        // 23
+    case trust              // 21
+    case connectHealth      // 22
+    case planTeaser         // 23
+    case aiAnalysis         // 23
+    case planSummary        // 24
 
     var id: Int { rawValue }
 
@@ -38,6 +39,36 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
     var stepIndex: Int { rawValue + 1 }
 
     static let totalSteps: Int = OnboardingStep.allCases.count
+    
+    /// Active onboarding steps (excludes placeholder/inactive steps)
+    static var activeSteps: [OnboardingStep] {
+        allCases.filter { step in
+            step != .welcome &&
+            step != .pastBlockers &&
+            step != .fitnessBenchmark &&
+            step != .coachStyle &&
+            step != .cookingSkill &&
+            step != .recentIntake
+        }
+    }
+    
+    /// Returns the next active step after the current step, or nil if at the end
+    func nextActiveStep() -> OnboardingStep? {
+        guard let currentIndex = OnboardingStep.activeSteps.firstIndex(of: self),
+              currentIndex + 1 < OnboardingStep.activeSteps.count else {
+            return nil
+        }
+        return OnboardingStep.activeSteps[currentIndex + 1]
+    }
+    
+    /// Returns the previous active step before the current step, or nil if at the beginning
+    func previousActiveStep() -> OnboardingStep? {
+        guard let currentIndex = OnboardingStep.activeSteps.firstIndex(of: self),
+              currentIndex > 0 else {
+            return nil
+        }
+        return OnboardingStep.activeSteps[currentIndex - 1]
+    }
 }
 
 enum OnboardingPhase: Int, CaseIterable {
@@ -61,7 +92,7 @@ extension OnboardingStep {
             return .workoutEngine
 
         case .dietaryNeeds, .cookingSkill, .recentIntake, .foodAversions,
-             .coachStyle, .connectHealth, .aiAnalysis, .planSummary:
+             .coachStyle, .trust, .connectHealth, .planTeaser, .aiAnalysis, .planSummary:
             return .nutritionPaywall
         }
     }

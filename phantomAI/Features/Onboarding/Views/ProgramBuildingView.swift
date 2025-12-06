@@ -197,6 +197,7 @@ struct ProgramBuildingView: View {
                 await MainActor.run {
                     stopTimer()
                     state = .success(program)
+                    onboarding.generatedProgram = program
                 }
             } catch {
                 // Handle error on main thread

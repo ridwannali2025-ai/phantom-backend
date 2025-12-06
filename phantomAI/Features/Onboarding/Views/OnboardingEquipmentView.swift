@@ -19,12 +19,12 @@ struct OnboardingEquipmentView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Title & subtitle with generous spacing
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("What equipment do you have access to?")
+                        Text("Equipment Access")
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                         
-                        Text("Select all that apply. We'll design workouts based on what's available to you.")
+                        Text("What equipment do you have access to?")
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -49,6 +49,7 @@ struct OnboardingEquipmentView: View {
                 title: "Continue",
                 isEnabled: !selectedEquipment.isEmpty,
                 action: {
+                    guard !selectedEquipment.isEmpty else { return }
                     onboarding.answers.equipment = Array(selectedEquipment)
                     onboarding.goToNext()
                 }

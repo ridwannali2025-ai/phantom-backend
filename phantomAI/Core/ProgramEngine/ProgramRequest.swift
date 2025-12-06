@@ -69,7 +69,7 @@ struct ProgramRequest: Codable {
     let sessionLengthMinutes: Int?
     
     /// Training split preference (if specified in onboarding)
-    let trainingSplit: String?
+    let trainingSplit: TrainingSplit?
 }
 
 // MARK: - Mapping from OnboardingAnswers
@@ -117,13 +117,13 @@ extension ProgramRequest {
         // Optional fields
         self.hasInjuries = answers.hasInjuries
         self.injuryDetails = answers.injuryDetails
-        self.dietaryRestrictions = answers.dietaryRestrictions.isEmpty ? nil : answers.dietaryRestrictions
+        self.dietaryRestrictions = answers.dietaryRestrictions?.isEmpty == false ? answers.dietaryRestrictions : nil
         self.avoidFoods = answers.avoidFoods?.isEmpty == false ? answers.avoidFoods : nil
         self.coachStyle = answers.coachStyle
         self.workoutTime = answers.workoutTime
         self.sleepHours = answers.sleepHours
         self.sessionLengthMinutes = answers.sessionLengthMinutes
-        self.trainingSplit = nil // TODO: Add to OnboardingAnswers when splitPreference screen is wired
+        self.trainingSplit = answers.trainingSplit
     }
 }
 

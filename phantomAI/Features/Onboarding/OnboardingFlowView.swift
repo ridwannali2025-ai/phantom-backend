@@ -29,6 +29,7 @@ struct OnboardingFlowView: View {
     @ViewBuilder
     private var contentView: some View {
         switch viewModel.currentStep {
+        // NOTE: Placeholder – not part of active flow yet
         case .welcome:
             OnboardingWelcomeView(viewModel: viewModel)
 
@@ -61,11 +62,14 @@ struct OnboardingFlowView: View {
                 .environmentObject(viewModel)
 
         case .workoutTime:
-            OnboardingWorkoutTimeView(viewModel: viewModel)
+            OnboardingWorkoutTimeView()
+                .environmentObject(viewModel)
 
         case .sleepHours:
-            OnboardingSleepView(viewModel: viewModel)
+            OnboardingSleepView()
+                .environmentObject(viewModel)
 
+        // NOTE: Placeholder – not part of active flow yet
         case .pastBlockers:
             OnboardingPastBlockersView(viewModel: viewModel)
 
@@ -78,7 +82,8 @@ struct OnboardingFlowView: View {
                 .environmentObject(viewModel)
 
         case .splitPreference:
-            OnboardingSplitPreferenceView(viewModel: viewModel)
+            OnboardingSplitPreferenceView()
+                .environmentObject(viewModel)
 
         case .sessionLength:
             OnboardingSessionLengthView()
@@ -88,36 +93,54 @@ struct OnboardingFlowView: View {
             OnboardingExperienceView()
                 .environmentObject(viewModel)
 
+        // NOTE: Placeholder – not part of active flow yet
         case .fitnessBenchmark:
             OnboardingBenchmarkView(viewModel: viewModel)
 
         case .injuries:
-            OnboardingInjuriesView(viewModel: viewModel)
+            OnboardingInjuriesView()
+                .environmentObject(viewModel)
 
         case .dietaryNeeds:
-            OnboardingDietNeedsView(viewModel: viewModel)
+            OnboardingDietNeedsView()
+                .environmentObject(viewModel)
 
+        // NOTE: Placeholder screen — not part of active onboarding flow
         case .cookingSkill:
             OnboardingCookingSkillView(viewModel: viewModel)
 
+        // NOTE: Placeholder screen — not part of active onboarding flow
         case .recentIntake:
             OnboardingRecentIntakeView(viewModel: viewModel)
 
         case .foodAversions:
-            OnboardingFoodAversionsView(viewModel: viewModel)
+            OnboardingFoodAversionsView()
+                .environmentObject(viewModel)
 
-        case .coachStyle:
-            OnboardingCoachStyleView(viewModel: viewModel)
+        case .trust:
+            OnboardingTrustView()
+                .environmentObject(viewModel)
 
         case .connectHealth:
-            OnboardingConnectHealthView(viewModel: viewModel)
+            OnboardingHealthConnectView()
+                .environmentObject(viewModel)
+
+        // NOTE: Removed from active flow – not part of active onboarding sequence
+        case .coachStyle:
+            OnboardingCoachStyleView()
+                .environmentObject(viewModel)
+
+        case .planTeaser:
+            PlanTeaserView()
+                .environmentObject(viewModel)
 
         case .aiAnalysis:
             ProgramBuildingView()
                 .environmentObject(viewModel)
 
         case .planSummary:
-            OnboardingPlanSummaryView(viewModel: viewModel)
+            OnboardingPlanSummaryView()
+                .environmentObject(viewModel)
         }
     }
 }

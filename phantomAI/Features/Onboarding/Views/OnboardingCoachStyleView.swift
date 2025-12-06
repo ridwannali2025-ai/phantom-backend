@@ -8,27 +8,84 @@
 import SwiftUI
 
 struct OnboardingCoachStyleView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @EnvironmentObject var onboarding: OnboardingViewModel
+    @State private var selectedStyle: CoachStyle? = nil
 
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Coach Style")
-                .font(.title)
-                .bold()
+        VStack(spacing: 0) {
+            // Header is already provided by OnboardingFlowView
 
-            Text("Placeholder UI for the coach style step. We will design this later.")
-                .multilineTextAlignment(.center)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    // Title & subtitle with generous spacing
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("What's your preferred coaching style?")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Text("This helps us tailor how your AI coach communicates with you.")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 32)
+                    .padding(.bottom, 32)
+                    .padding(.horizontal, 24)
 
-            Button("Continue") {
-                viewModel.goNext()
+                    // Coach style selection cards
+                    VStack(spacing: 12) {
+                        ForEach(CoachStyle.allCases) { style in
+                            coachStyleCard(for: style)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.borderedProminent)
+
+            // Bottom-anchored Continue button
+            PrimaryContinueButton(
+                title: "Continue",
+                isEnabled: selectedStyle != nil,
+                action: {
+                    guard let selectedStyle else { return }
+                    onboarding.answers.coachStyle = selectedStyle
+                    onboarding.goToNext()
+                }
+            )
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
         }
-        .padding()
+        .background(Color.white.ignoresSafeArea())
+        .onAppear {
+            // Prefill from existing answers if user navigates back
+            if let saved = onboarding.answers.coachStyle {
+                selectedStyle = saved
+            }
+        }
+    }
+    
+    // MARK: - Coach Style Card
+    
+    private func coachStyleCard(for style: CoachStyle) -> some View {
+        let isSelected = selectedStyle == style
+        
+        return OnboardingSelectableCard(
+            title: style.rawValue,
+            subtitle: style.description,
+            isSelected: isSelected,
+            onTap: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    selectedStyle = style
+                }
+            }
+        )
     }
 }
 
 #Preview {
-    OnboardingCoachStyleView(viewModel: .preview)
+    OnboardingCoachStyleView()
+        .environmentObject(OnboardingViewModel.preview)
 }
 
