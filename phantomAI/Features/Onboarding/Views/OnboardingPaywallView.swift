@@ -78,15 +78,8 @@ struct OnboardingPaywallView: View {
 
     private var headerSection: some View {
         HStack {
-            Button(action: { onboarding.goBack() }) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color(hex: "A06AFE"))
-                    .padding(8)
-            }
-
             Spacer()
-
+            
             Button(action: { /* TODO: restore purchases later */ }) {
                 Text("Restore")
                     .font(.system(size: 15, weight: .regular))
@@ -203,12 +196,20 @@ struct OnboardingPaywallView: View {
         // Mark subscription as active and onboarding as complete
         appState.hasActiveSubscription = true
         appState.hasCompletedOnboarding = true
+        appState.shouldShowPostPurchaseChat = true  // Trigger post-purchase chat flow
+        appState.selectedTab = 2  // Navigate to Chat tab (index 2)
         
         // Store subscription choice (could be saved to UserDefaults or backend)
         // For now, we just mark it as active
         
         // Navigate to main app - this will be handled by AppRootView
         // based on appState.currentPhase (will switch to .main)
+        
+        // Trigger AI generation in the background (silent, non-blocking)
+        // This replaces the teaser plan with a real AI-generated plan
+        Task {
+            await onboarding.generateProgramFromAIIfNeeded()
+        }
     }
 }
 

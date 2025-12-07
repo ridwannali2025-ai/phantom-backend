@@ -87,6 +87,8 @@ struct OnboardingAnswers: Codable {
     
     // Phase 5 – Coach persona
     var coachStyle: CoachStyle?                // supportive / challenging
+    /// Free-form notes from post-purchase chat flow
+    var coachNotes: String? = nil
     
     // Legacy field for backward compatibility (maps to primaryGoal)
     var goal: FitnessGoal? {

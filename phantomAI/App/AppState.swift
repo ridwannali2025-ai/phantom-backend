@@ -15,6 +15,8 @@ final class AppState: ObservableObject {
     @Published var hasCompletedOnboarding: Bool = false
     @Published var isAuthenticated: Bool = false
     @Published var hasActiveSubscription: Bool = false
+    @Published var shouldShowPostPurchaseChat: Bool = false
+    @Published var selectedTab: Int = 0
     
     // MARK: - Computed Properties
     
@@ -36,6 +38,12 @@ final class AppState: ObservableObject {
     init() {
         // Load persisted state if needed
         // For now, start fresh
+    }
+    
+    // MARK: - Post-Purchase Chat
+    
+    func completePostPurchaseChat() {
+        shouldShowPostPurchaseChat = false
     }
 }
 

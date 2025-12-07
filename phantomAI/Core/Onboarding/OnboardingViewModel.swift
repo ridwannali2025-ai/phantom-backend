@@ -6,6 +6,9 @@ final class OnboardingViewModel: ObservableObject {
     @Published var answers = OnboardingAnswers()
     @Published var generatedProgram: Program?
     @Published var generatedPlan: GeneratedPlan?
+    
+    /// Tracks whether generatedPlan came from AI/backend (true) or is a local teaser (false)
+    private var didGeneratePlanFromAI: Bool = false
 
     var canGoBack: Bool {
         guard let firstActiveStep = OnboardingStep.activeSteps.first else { return false }
@@ -140,6 +143,34 @@ extension OnboardingViewModel {
         }
         
         return true
+    }
+    
+    /// Generates program from AI/backend if needed (only after paywall purchase)
+    /// This is called silently in the background after successful subscription
+    func generateProgramFromAIIfNeeded() async {
+        // If we already have a plan from AI, do nothing
+        guard !didGeneratePlanFromAI else {
+            return
+        }
+        
+        // Build request from answers
+        let request = programRequest
+        
+        // Call AI service
+        let engineService = ProgramEngineService()
+        do {
+            let aiPlan = try await engineService.generatePlan(from: request)
+            
+            // Update on main thread
+            await MainActor.run {
+                self.generatedPlan = aiPlan
+                self.didGeneratePlanFromAI = true
+            }
+        } catch {
+            // Silently fail - keep using teaser plan
+            // No error shown to user, no crash
+            print("AI program generation failed, keeping teaser plan: \(error.localizedDescription)")
+        }
     }
 }
 

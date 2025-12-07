@@ -6,128 +6,113 @@
 //
 
 import Foundation
+import SwiftUI
 import Combine
 
-/// ViewModel that manages program building state and progress
 final class ProgramBuilderViewModel: ObservableObject {
-    // MARK: - Published Properties
+    // MARK: - Published state for the UI
     
-    @Published var progress: Double = 0.0
-    @Published var statusText: String = "Analyzing your goals"
-    @Published var generatedProgram: GeneratedProgram?
-    @Published var isBuilding: Bool = false
-    @Published var error: Error?
+    @Published var progress: Double = 0.0        // 0.0 – 1.0
+    @Published var percentageText: String = "0%"
+    @Published var currentStepTitle: String = "Analyzing your goals…"
+    @Published var steps: [ProgramBuildStep] = []
+    @Published var isFinished: Bool = false
     
-    // MARK: - Dependencies
+    // Store the request/answers if needed
+    let request: ProgramRequest
     
-    private var answers: OnboardingAnswers
-    private let service: ProgramBuilderService
-    private var cancellables = Set<AnyCancellable>()
-    private var progressTimer: Timer?
+    // MARK: - Init
     
-    // MARK: - Status Steps
-    
-    private let statusSteps = [
-        "Analyzing your goals",
-        "Balancing training & recovery",
-        "Creating week 1",
-        "Finalizing your daily plan"
-    ]
-    
-    // MARK: - Initialization
-    
-    init(answers: OnboardingAnswers, service: ProgramBuilderService = MockProgramBuilderService()) {
-        self.answers = answers
-        self.service = service
+    init(request: ProgramRequest) {
+        self.request = request
+        
+        self.steps = [
+            ProgramBuildStep(title: "Analyzing your goals"),
+            ProgramBuildStep(title: "Balancing training & recovery"),
+            ProgramBuildStep(title: "Creating Week 1"),
+            ProgramBuildStep(title: "Finalizing your daily plan")
+        ]
+        
+        self.updateProgress(stepIndex: 0)
     }
     
-    // MARK: - Actions
+    // MARK: - Public API
     
-    /// Start the program building process
-    func startBuilding(with answers: OnboardingAnswers? = nil) {
-        guard !isBuilding else { return }
+    func startBuilding(after delay: TimeInterval = 0.5,
+                       stepDuration: TimeInterval = 1.0,
+                       completion: @escaping (GeneratedProgram) -> Void)
+    {
+        // Simulate multi-step progress locally.
+        // No AI or network calls here yet: just a fake progress animation.
         
-        // Update answers if provided
-        if let newAnswers = answers {
-            self.answers = newAnswers
+        let totalSteps = steps.count
+        guard totalSteps > 0 else {
+            self.finish(with: completion)
+            return
         }
         
-        isBuilding = true
-        progress = 0.0
-        statusText = statusSteps[0]
-        generatedProgram = nil
-        error = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.runStep(at: 0,
+                         totalSteps: totalSteps,
+                         stepDuration: stepDuration,
+                         completion: completion)
+        }
+    }
+    
+    // MARK: - Private helpers
+    
+    private func runStep(at index: Int,
+                         totalSteps: Int,
+                         stepDuration: TimeInterval,
+                         completion: @escaping (GeneratedProgram) -> Void)
+    {
+        guard index < totalSteps else {
+            self.finish(with: completion)
+            return
+        }
         
-        // Start progress animation
-        startProgressAnimation()
+        updateProgress(stepIndex: index)
         
-        // Start actual program generation
-        Task {
-            do {
-                let program = try await service.generateProgram(from: self.answers)
-                
-                await MainActor.run {
-                    // Ensure progress reaches 100% before setting program
-                    progress = 1.0
-                    statusText = statusSteps.last ?? "Complete"
-                    
-                    // Small delay to show completion
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        self.generatedProgram = program
-                        self.isBuilding = false
-                        self.stopProgressAnimation()
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    self.error = error
-                    self.isBuilding = false
-                    self.stopProgressAnimation()
-                }
+        DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration) {
+            let nextIndex = index + 1
+            if nextIndex < totalSteps {
+                self.runStep(at: nextIndex,
+                             totalSteps: totalSteps,
+                             stepDuration: stepDuration,
+                             completion: completion)
+            } else {
+                self.finish(with: completion)
             }
         }
     }
     
-    // MARK: - Private Methods
-    
-    private func startProgressAnimation() {
-        stopProgressAnimation()
+    private func updateProgress(stepIndex: Int) {
+        let total = max(steps.count, 1)
+        let fraction = Double(stepIndex + 1) / Double(total)
+        self.progress = fraction
+        self.percentageText = "\(Int(fraction * 100))%"
         
-        let duration: TimeInterval = 5.0 // 5 seconds total
-        let steps = statusSteps.count
-        let stepDuration = duration / Double(steps)
-        
-        var currentStep = 0
-        
-        progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
-            guard let self = self else {
-                timer.invalidate()
-                return
-            }
-            
-            let elapsed = Date().timeIntervalSince(self.startTime)
-            let targetProgress = min(0.95, elapsed / duration) // Cap at 95% until program is ready
-            
-            self.progress = targetProgress
-            
-            // Update status text based on progress
-            let stepIndex = Int(elapsed / stepDuration)
-            if stepIndex != currentStep && stepIndex < steps {
-                currentStep = stepIndex
-                self.statusText = self.statusSteps[min(stepIndex, steps - 1)]
-            }
+        if stepIndex < steps.count {
+            self.currentStepTitle = steps[stepIndex].title
         }
     }
     
-    private var startTime = Date()
-    
-    private func stopProgressAnimation() {
-        progressTimer?.invalidate()
-        progressTimer = nil
+    private func finish(with completion: @escaping (GeneratedProgram) -> Void) {
+        self.progress = 1.0
+        self.percentageText = "100%"
+        self.isFinished = true
+        
+        // For now, create a simple placeholder GeneratedProgram
+        // using the ProgramRequest (or sensible defaults).
+        let placeholder = GeneratedProgram.placeholder(from: request)
+        completion(placeholder)
     }
-    
-    deinit {
-        stopProgressAnimation()
-    }
+}
+
+// MARK: - ProgramBuildStep
+
+struct ProgramBuildStep: Identifiable {
+    let id = UUID()
+    let title: String
 }
 

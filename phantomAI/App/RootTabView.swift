@@ -9,10 +9,10 @@ import SwiftUI
 
 /// Root tab view containing all main app tabs
 struct RootTabView: View {
-    @State private var selectedTab = 0
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $appState.selectedTab) {
             TodayView()
                 .tabItem {
                     Label("Today", systemImage: "house.fill")

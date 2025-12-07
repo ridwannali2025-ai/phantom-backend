@@ -51,6 +51,88 @@ struct GeneratedProgram: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Placeholder Factory
+
+extension GeneratedProgram {
+    /// Creates a placeholder GeneratedProgram from a ProgramRequest
+    static func placeholder(from request: ProgramRequest) -> GeneratedProgram {
+        // Calculate calories using simple BMR + activity
+        let bmr: Double
+        switch request.sex {
+        case .male:
+            bmr = 10 * request.weightKg + 6.25 * request.heightCm - 5 * Double(request.age) + 5
+        case .female:
+            bmr = 10 * request.weightKg + 6.25 * request.heightCm - 5 * Double(request.age) - 161
+        case .other:
+            bmr = 10 * request.weightKg + 6.25 * request.heightCm - 5 * Double(request.age) - 78
+        }
+        
+        let activityFactor: Double
+        switch request.activityLevel {
+        case .mostlySitting:
+            activityFactor = 1.2
+        case .sometimesOnFeet:
+            activityFactor = 1.375
+        case .oftenOnFeet:
+            activityFactor = 1.55
+        case .veryActive:
+            activityFactor = 1.725
+        }
+        
+        let maintenanceCalories = bmr * activityFactor
+        let targetCalories: Int
+        switch request.goal {
+        case .loseFat:
+            targetCalories = Int(maintenanceCalories - 400)
+        case .buildMuscle, .getStronger:
+            targetCalories = Int(maintenanceCalories + 200)
+        default:
+            targetCalories = Int(maintenanceCalories)
+        }
+        
+        let proteinGrams = Int(request.weightKg * 2.0)
+        let fatGrams = Int((Double(targetCalories) * 0.25) / 9.0)
+        let carbGrams = Int((Double(targetCalories) - Double(proteinGrams) * 4 - Double(fatGrams) * 9) / 4.0)
+        
+        // Generate workout plans based on days per week
+        let workoutPlans = (0..<request.daysPerWeek).map { index -> WorkoutPlan in
+            let workoutNames = ["Upper Body", "Lower Body", "Full Body", "Push", "Pull", "Legs"]
+            let workoutName = workoutNames[index % workoutNames.count]
+            
+            return WorkoutPlan(
+                id: UUID().uuidString,
+                name: workoutName,
+                exercises: [
+                    WorkoutPlan.Exercise(
+                        id: UUID().uuidString,
+                        name: "Exercise \(index + 1)",
+                        sets: 3,
+                        reps: 10,
+                        weight: nil,
+                        duration: nil
+                    )
+                ],
+                scheduledDate: nil
+            )
+        }
+        
+        return GeneratedProgram(
+            id: UUID().uuidString,
+            name: "\(request.goal.title) Program",
+            description: "A personalized program designed for your goals.",
+            workouts: workoutPlans,
+            nutritionPlan: NutritionPlan(
+                targetCalories: max(1200, min(4000, targetCalories)),
+                proteinGrams: proteinGrams,
+                carbGrams: max(0, carbGrams),
+                fatGrams: max(0, fatGrams),
+                mealSuggestions: []
+            ),
+            createdAt: Date()
+        )
+    }
+}
+
 // MARK: - Conversion to Program
 
 extension GeneratedProgram {

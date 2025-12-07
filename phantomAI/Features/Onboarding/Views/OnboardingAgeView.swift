@@ -133,67 +133,52 @@ struct OnboardingAgeView: View {
     // MARK: - Date Picker Card
     
     private var datePickerCard: some View {
-        HStack(spacing: 0) {
-            // Month picker
-            GeometryReader { geometry in
+        VStack {
+            HStack(spacing: 0) {
+                // Month picker
                 Picker("Month", selection: $selectedMonthIndex) {
                     ForEach(0..<months.count, id: \.self) { index in
                         Text(months[index])
+                            .font(.system(size: 20, weight: .medium))
                             .tag(index)
                     }
                 }
                 .pickerStyle(.wheel)
                 .accentColor(Color(hex: "A06AFE"))
-                .frame(width: geometry.size.width)
-            }
-            
-            // Day picker
-            GeometryReader { geometry in
+                .frame(width: 120, alignment: .center)
+                
+                // Day picker
                 Picker("Day", selection: $selectedDay) {
                     ForEach(1...daysInSelectedMonth, id: \.self) { day in
                         Text("\(day)")
+                            .font(.system(size: 20, weight: .medium))
                             .tag(day)
                     }
                 }
                 .pickerStyle(.wheel)
                 .accentColor(Color(hex: "A06AFE"))
-                .frame(width: geometry.size.width)
-            }
-            
-            // Year picker
-            GeometryReader { geometry in
-                HStack(spacing: 0) {
-                    Picker("Year", selection: $selectedYear) {
-                        ForEach(yearRange, id: \.self) { year in
-                            Text("\(year)")
-                                .tag(year)
-                        }
+                .frame(width: 60, alignment: .center)
+                
+                // Year picker
+                Picker("Year", selection: $selectedYear) {
+                    ForEach(yearRange, id: \.self) { year in
+                        Text("\(year)")
+                            .font(.system(size: 20, weight: .medium))
+                            .tag(year)
                     }
-                    .pickerStyle(.wheel)
-                    .accentColor(Color(hex: "A06AFE"))
-                    .frame(width: geometry.size.width - 40)
-                    
-                    Text("year")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
-                        .padding(.leading, 8)
                 }
+                .pickerStyle(.wheel)
+                .accentColor(Color(hex: "A06AFE"))
+                .frame(width: 90, alignment: .center)
             }
+            .frame(maxWidth: .infinity, minHeight: 220)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(Color(.systemGray6))
+            )
+            .padding(.top, 12)
         }
-        .frame(height: 200)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 24)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color(.systemGray6))
-        )
-        .overlay(
-            // Highlight overlay for selected row (Cal AI style pill)
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray5).opacity(0.4))
-                .frame(height: 36)
-                .allowsHitTesting(false)
-        )
     }
     
     // MARK: - Helper Functions

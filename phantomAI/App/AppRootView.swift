@@ -11,6 +11,7 @@ import SwiftUI
 struct AppRootView: View {
     @Environment(\.container) private var container
     @StateObject private var appState = AppState()
+    @StateObject private var onboarding = OnboardingViewModel()
     
     var body: some View {
         Group {
@@ -19,12 +20,14 @@ struct AppRootView: View {
             case .onboarding, .authentication, .paywall:
                 // All onboarding-related phases are handled within OnboardingFlowView
                 // The flow will navigate to sign-up (authentication) and paywall automatically
-                OnboardingFlowView()
+                OnboardingFlowView(viewModel: onboarding)
                     .environmentObject(appState)
                 
             case .main:
                 // User has completed onboarding, authenticated, and subscribed
                 RootTabView()
+                    .environmentObject(appState)
+                    .environmentObject(onboarding)
             }
         }
     }
