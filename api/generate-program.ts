@@ -55,7 +55,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   let body: ProgramRequest;
   try {
-    body = await req.json();
+    body = (await req.json()) as ProgramRequest;
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
       status: 400,
