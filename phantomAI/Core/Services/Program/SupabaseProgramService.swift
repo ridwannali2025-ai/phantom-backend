@@ -12,35 +12,160 @@ import Foundation
 final class SupabaseProgramService: ProgramService {
     private let supabaseUrl: URL
     private let supabaseAnonKey: String
+    private let session: URLSession
+    private let sessionStore: SupabaseSessionStore
     
-    init(config: AppConfig) {
+    init(config: AppConfig, session: URLSession = .shared, sessionStore: SupabaseSessionStore = .shared) {
         self.supabaseUrl = config.supabaseUrl
         self.supabaseAnonKey = config.supabaseAnonKey
-        // TODO: Initialize Supabase client for database operations
+        self.session = session
+        self.sessionStore = sessionStore
     }
     
+    // MARK: - ProgramService
+    
     func fetchCurrentProgram(for userId: String) async throws -> Program? {
-        // TODO: Implement Supabase database query
-        // 1. Construct GET request to {supabaseUrl}/rest/v1/programs
-        // 2. Add query parameters: ?user_id=eq.{userId}&is_active=eq.true&order=created_at.desc&limit=1
-        // 3. Add Authorization header with Bearer {supabaseAnonKey}
-        // 4. Add apikey header with {supabaseAnonKey}
-        // 5. Parse JSON response and decode to Program model
-        // 6. Return first program or nil if none found
+        let query = [
+            URLQueryItem(name: "user_id", value: "eq.\(userId)"),
+            URLQueryItem(name: "order", value: "created_at.desc"),
+            URLQueryItem(name: "limit", value: "1")
+        ]
         
-        // Stub implementation
-        return nil
+        var request = try makeRequest(
+            path: "rest/v1/programs",
+            method: "GET",
+            queryItems: query
+        )
+        request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+        
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        
+        let decoder = Self.jsonDecoder
+        let programs = try decoder.decode([Program].self, from: data)
+        return programs.first
     }
     
     func fetchTodayPlan(for userId: String) async throws -> TodayPlan {
-        // TODO: Implement Supabase database query for today's plan
-        // 1. Get current program for user
-        // 2. Query today_plans table: ?user_id=eq.{userId}&date=eq.{today}
-        // 3. If no plan exists, generate one from program or return default
-        // 4. Parse and return TodayPlan
+        let today = Calendar.current.startOfDay(for: Date())
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let todayString = formatter.string(from: today)
         
-        // Stub implementation
-        throw NSError(domain: "SupabaseProgramService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented: Fetch today plan"])
+        let query = [
+            URLQueryItem(name: "user_id", value: "eq.\(userId)"),
+            URLQueryItem(name: "date", value: "eq.\(todayString)"),
+            URLQueryItem(name: "order", value: "created_at.desc"),
+            URLQueryItem(name: "limit", value: "1")
+        ]
+        
+        var request = try makeRequest(
+            path: "rest/v1/today_plans",
+            method: "GET",
+            queryItems: query
+        )
+        request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+        
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        
+        let decoder = Self.jsonDecoder
+        let plans = try decoder.decode([TodayPlan].self, from: data)
+        
+        guard let plan = plans.first else {
+            throw NSError(domain: "SupabaseProgramService", code: 404, userInfo: [NSLocalizedDescriptionKey: "No plan found for today"])
+        }
+        
+        return plan
     }
+    
+    // MARK: - Upsert helpers (non-protocol convenience)
+    
+    @discardableResult
+    func upsertProgram(_ program: Program) async throws -> Program {
+        let encoder = Self.jsonEncoder
+        let payload = try encoder.encode(program)
+        
+        var request = try makeRequest(
+            path: "rest/v1/programs",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("return=representation,resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+        
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        
+        let decoder = Self.jsonDecoder
+        let programs = try decoder.decode([Program].self, from: data)
+        return programs.first ?? program
+    }
+    
+    @discardableResult
+    func upsertTodayPlan(_ plan: TodayPlan) async throws -> TodayPlan {
+        let encoder = Self.jsonEncoder
+        let payload = try encoder.encode(plan)
+        
+        var request = try makeRequest(
+            path: "rest/v1/today_plans",
+            method: "POST",
+            body: payload
+        )
+        request.setValue("return=representation,resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+        
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        
+        let decoder = Self.jsonDecoder
+        let plans = try decoder.decode([TodayPlan].self, from: data)
+        return plans.first ?? plan
+    }
+    
+    // MARK: - Request helpers
+    
+    private func makeRequest(path: String, method: String, queryItems: [URLQueryItem] = [], body: Data? = nil) throws -> URLRequest {
+        var components = URLComponents(url: supabaseUrl.appendingPathComponent(path), resolvingAgainstBaseURL: false)
+        if !queryItems.isEmpty {
+            components?.queryItems = queryItems
+        }
+        guard let url = components?.url else {
+            throw NSError(domain: "SupabaseProgramService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL components"])
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        let token = try sessionStore.requireAccessToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let body = body {
+            request.httpBody = body
+        }
+        return request
+    }
+    
+    private func validate(response: URLResponse, data: Data) throws {
+        guard let http = response as? HTTPURLResponse else {
+            throw NSError(domain: "SupabaseProgramService", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw NSError(domain: "SupabaseProgramService", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: message])
+        }
+    }
+    
+    private static var jsonDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+    
+    private static var jsonEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }()
 }
-

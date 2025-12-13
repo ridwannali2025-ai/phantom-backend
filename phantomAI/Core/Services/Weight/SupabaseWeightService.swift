@@ -1,15 +1,14 @@
 //
-//  SupabaseWorkoutService.swift
+//  SupabaseWeightService.swift
 //  phantomAI
 //
-//  Created by Ridwan Ali on 12/1/25.
+//  Created for Phase 1 Step 1 smoke test
 //
 
 import Foundation
 
-/// Supabase-backed implementation of WorkoutService for production use
-/// Handles workout data persistence and retrieval via Supabase Postgres database
-final class SupabaseWorkoutService: WorkoutService {
+/// Simple service for weight_entries CRUD operations via Supabase
+final class SupabaseWeightService {
     private let supabaseUrl: URL
     private let supabaseAnonKey: String
     private let session: URLSession
@@ -22,14 +21,19 @@ final class SupabaseWorkoutService: WorkoutService {
         self.sessionStore = sessionStore
     }
     
-    // MARK: - WorkoutService
-    
-    func logSet(_ set: WorkoutSet) async throws {
+    /// Insert a weight entry for the current user
+    func insertWeightEntry(userId: String, date: Date, weight: Double) async throws -> WeightEntry {
         let encoder = Self.jsonEncoder
-        let payload = try encoder.encode(set)
+        let entry = WeightEntry(
+            id: UUID(),
+            userId: userId,
+            date: date,
+            weight: weight
+        )
+        let payload = try encoder.encode(entry)
         
         var request = try makeRequest(
-            path: "rest/v1/workout_sets",
+            path: "rest/v1/weight_entries",
             method: "POST",
             body: payload
         )
@@ -37,18 +41,22 @@ final class SupabaseWorkoutService: WorkoutService {
         
         let (data, response) = try await session.data(for: request)
         try validate(response: response, data: data)
-        _ = data // Response not needed yet
+        
+        let decoder = Self.jsonDecoder
+        let entries = try decoder.decode([WeightEntry].self, from: data)
+        return entries.first ?? entry
     }
     
-    func fetchRecentSessions(for userId: String) async throws -> [WorkoutSession] {
+    /// Fetch weight entries for a user
+    func fetchWeightEntries(userId: String, limit: Int = 10) async throws -> [WeightEntry] {
         let query = [
             URLQueryItem(name: "user_id", value: "eq.\(userId)"),
-            URLQueryItem(name: "order", value: "start_time.desc"),
-            URLQueryItem(name: "limit", value: "20")
+            URLQueryItem(name: "order", value: "date.desc"),
+            URLQueryItem(name: "limit", value: "\(limit)")
         ]
         
         let request = try makeRequest(
-            path: "rest/v1/workout_sessions",
+            path: "rest/v1/weight_entries",
             method: "GET",
             queryItems: query
         )
@@ -57,29 +65,7 @@ final class SupabaseWorkoutService: WorkoutService {
         try validate(response: response, data: data)
         
         let decoder = Self.jsonDecoder
-        return try decoder.decode([WorkoutSession].self, from: data)
-    }
-    
-    // MARK: - Convenience helpers (non-protocol)
-    
-    @discardableResult
-    func logSession(_ sessionModel: WorkoutSession) async throws -> WorkoutSession {
-        let encoder = Self.jsonEncoder
-        let payload = try encoder.encode(sessionModel)
-        
-        var request = try makeRequest(
-            path: "rest/v1/workout_sessions",
-            method: "POST",
-            body: payload
-        )
-        request.setValue("return=representation,resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
-        
-        let (data, response) = try await session.data(for: request)
-        try validate(response: response, data: data)
-        
-        let decoder = Self.jsonDecoder
-        let sessions = try decoder.decode([WorkoutSession].self, from: data)
-        return sessions.first ?? sessionModel
+        return try decoder.decode([WeightEntry].self, from: data)
     }
     
     // MARK: - Request helpers
@@ -90,7 +76,7 @@ final class SupabaseWorkoutService: WorkoutService {
             components?.queryItems = queryItems
         }
         guard let url = components?.url else {
-            throw NSError(domain: "SupabaseWorkoutService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            throw NSError(domain: "SupabaseWeightService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
         }
         
         var request = URLRequest(url: url)
@@ -109,11 +95,11 @@ final class SupabaseWorkoutService: WorkoutService {
     
     private func validate(response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else {
-            throw NSError(domain: "SupabaseWorkoutService", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+            throw NSError(domain: "SupabaseWeightService", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
         }
         guard (200..<300).contains(http.statusCode) else {
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
-            throw NSError(domain: "SupabaseWorkoutService", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: message])
+            throw NSError(domain: "SupabaseWeightService", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: message])
         }
     }
     
